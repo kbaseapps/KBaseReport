@@ -28,6 +28,9 @@ module KBaseReport {
         list of warnings, and a list of objects created (each with descriptions).
 
         @optional warnings
+        @metadata ws length(warnings) as Warnings
+        @metadata ws length(text_message) as Size(characters)
+        @metadata ws length(objects_created) as Objects Created
     */
     typedef structure {
 
