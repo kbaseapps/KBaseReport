@@ -44,6 +44,8 @@ class KBaseReport:
         # return variables are: info
         #BEGIN create
 
+        print('Creating KBase Report.')
+
         # check that the basic parameters are set
         if 'report' not in params:
             raise ValueError('Field "report" must be defined to save a report')
@@ -59,6 +61,9 @@ class KBaseReport:
         reportName = 'report_'+str(uuid.uuid4())
         if 'prefix' in params:
             reportName = params['prefix'] + reportName
+
+
+        print('Report Name' + reportName)
 
         # let any workspace errors just percolate up for now
         ws = Workspace(self.workspaceURL, token=ctx['token'])
