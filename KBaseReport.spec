@@ -8,7 +8,6 @@ module KBaseReport {
     /* @id ws */
     typedef string ws_id;
 
-
     /*
         Represents a Workspace object with some brief description text
         that can be associated with the object.
@@ -42,5 +41,17 @@ module KBaseReport {
 
     } Report;
 
+
+    typedef structure {
+        Report report;
+        string workspace_name;
+    } CreateReportParams;
+
+    typedef structure {
+        ws_id ref;
+        string name;
+    } ReportInfo;
+
+    funcdef create(CreateReportParams params) returns (ReportInfo info) authentication required;
 
 };

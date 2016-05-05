@@ -1,0 +1,19 @@
+{
+    "name" : "Create a KBase Report",
+    "short_description" : 
+        "KBase Reports should be generated after each Narrative App run, and this function should be used for creating all Reports.",
+
+    "long_description" : "create.html",
+
+    "tags" : {
+        "categories" : [],
+        "input": {
+            "file_types": [],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": ["KBaseReport.Report"]
+        }
+    }
+}

@@ -1,0 +1,104 @@
+
+<p>KBase Reports are useful for capturing any information related to running a
+Narrative App, such as statistics about the output objects and the list of output
+data objects.  In some cases, for Apps that only perform some informational analysis,
+Reports may be the only output data object.</p>
+
+<p>Reports are fairly simple objects for now.  They support a list of data object
+references that have been created (with optional descriptions for each object), a
+text message field, and an optional list of warnings.  Here is the report
+specification as defined in KIDL:</p>
+
+<pre>
+    /* @id ws */
+    typedef string ws_id;
+
+    /*
+        Represents a Workspace object with some brief description text
+        that can be associated with the object.
+        @optional description
+    */
+    typedef structure {
+        ws_id ref;
+        string description;
+    } WorkspaceObject;
+
+
+    /*
+        A simple Report of a method run in KBase.
+
+        It only provides for now a way to display a fixed width text output summary message, a 
+        list of warnings, and a list of objects created (each with descriptions).
+
+        @optional warnings
+        @metadata ws length(warnings) as Warnings
+        @metadata ws length(text_message) as Size(characters)
+        @metadata ws length(objects_created) as Objects Created
+    */
+    typedef structure {
+        string text_message;
+        list <string> warnings;
+        list <WorkspaceObject> objects_created;
+    } Report;
+</pre>
+
+<p> And here is an example Report Object as you might define it in python.</p>
+
+
+<pre>
+    report = {
+        'text_description' : "This is the result of my anlaysis:\n\n    Avg=2.54.",
+        'objects_created' : [{ 
+            'ref':'MyWs/MyAverageResult'
+        }],
+        'warnings' : []
+    }
+</pre>
+
+<p> To call the create method to generate a report using the generic client in python:</p>
+
+<pre>
+        kbgc = GenericClient(os.environ['SDK_CALLBACK_URL'], use_url_lookup=False,
+                           token=ctx['token'])
+
+        report = ...
+
+        report_info = kbgc.sync_call("KBaseReport.create",
+                [{
+                    'report': report,
+                    'workspace_name': params['workspace_name']
+
+                }], json_rpc_context={"service_ver": "dev"})[0]
+</pre>
+
+<p>If the Report information is part of the output of your Narrative App, then it will
+automatically appear in the Narrative after an App is run.  To indicate that a report
+object has been created by your Narrative App, be sure to declare it in the KIDL
+specification like so:</p>
+
+<pre>
+    typedef structure {
+        string report_name;
+        string report_ref;
+        ...
+    } Output;
+
+    funcdef my_function() returns (Output output) authentication required;
+</pre>
+
+<p> and then return the output based on the report_info recieved from the KBaseReport.create
+method:</p>
+
+<pre>
+    output = { 
+        'report_name': report_info['name'], 
+        'report_ref': report_info['ref'],
+        ...
+    }
+</pre>
+
+
+
+
+
+
