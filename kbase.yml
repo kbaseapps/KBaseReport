@@ -5,11 +5,11 @@ module-description:
     Set of tools and data types for creating KBase Reports
 
 service-language:
-    python
+    perl
 
 module-version:
-    1.0.1
+    0.0.1
 
 owners:
-    [msneddon, chenry]
+    [msneddon, chenry, janakakbase]
 

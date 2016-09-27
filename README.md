@@ -1,7 +1,6 @@
+[![Build Status](https://travis-ci.org/chenry/KBaseReport.svg?branch=master)](https://travis-ci.org/chenry/KBaseReport)
+
 # KBaseReport
+---
 
-Experiments with a report data type for kbase SDK modules.
-
-To test compilation, run:
-
-    kb-sdk compile KBaseReport.spec
+This is the basic readme for this module. This module contains an example method that counts the contigs in a contig set.

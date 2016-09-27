@@ -12,42 +12,57 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * <p>Original spec-file type: ReportInfo</p>
+ * <p>Original spec-file type: LinkedFile</p>
  * <pre>
- * The reference to the saved KBaseReport.  The structure is:
- *     reportInfo = {
- *         ref: 'ws/objid/ver',
- *         name: 'myreport.2262323452'
- *     }
+ * Represents a file or html archive that the report should like to
+ * @optional description
  * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "ref",
+    "handle",
+    "description",
     "name"
 })
-public class ReportInfo {
+public class LinkedFile {
 
-    @JsonProperty("ref")
-    private String ref;
+    @JsonProperty("handle")
+    private String handle;
+    @JsonProperty("description")
+    private String description;
     @JsonProperty("name")
     private String name;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("ref")
-    public String getRef() {
-        return ref;
+    @JsonProperty("handle")
+    public String getHandle() {
+        return handle;
     }
 
-    @JsonProperty("ref")
-    public void setRef(String ref) {
-        this.ref = ref;
+    @JsonProperty("handle")
+    public void setHandle(String handle) {
+        this.handle = handle;
     }
 
-    public ReportInfo withRef(String ref) {
-        this.ref = ref;
+    public LinkedFile withHandle(String handle) {
+        this.handle = handle;
+        return this;
+    }
+
+    @JsonProperty("description")
+    public String getDescription() {
+        return description;
+    }
+
+    @JsonProperty("description")
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LinkedFile withDescription(String description) {
+        this.description = description;
         return this;
     }
 
@@ -61,7 +76,7 @@ public class ReportInfo {
         this.name = name;
     }
 
-    public ReportInfo withName(String name) {
+    public LinkedFile withName(String name) {
         this.name = name;
         return this;
     }
@@ -78,7 +93,7 @@ public class ReportInfo {
 
     @Override
     public String toString() {
-        return ((((((("ReportInfo"+" [ref=")+ ref)+", name=")+ name)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((("LinkedFile"+" [handle=")+ handle)+", description=")+ description)+", name=")+ name)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

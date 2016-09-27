@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 import us.kbase.common.service.JsonClientException;
@@ -20,6 +21,7 @@ import us.kbase.common.service.UnauthorizedException;
  */
 public class KBaseReportClient {
     private JsonClientCaller caller;
+    private String serviceVersion = null;
 
 
     /** Constructs a client with a custom URL and no user credentials.
@@ -49,6 +51,20 @@ public class KBaseReportClient {
      */
     public KBaseReportClient(URL url, String user, String password) throws UnauthorizedException, IOException {
         caller = new JsonClientCaller(url, user, password);
+    }
+
+    /** Constructs a client with a custom URL
+     * and a custom authorization service URL.
+     * @param url the URL of the service.
+     * @param user the user name.
+     * @param password the password for the user name.
+     * @param auth the URL of the authorization server.
+     * @throws UnauthorizedException if the credentials are not valid.
+     * @throws IOException if an IOException occurs when checking the user's
+     * credentials.
+     */
+    public KBaseReportClient(URL url, String user, String password, URL auth) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, user, password, auth);
     }
 
     /** Get the token this client uses to communicate with the server.
@@ -138,20 +154,54 @@ public class KBaseReportClient {
         caller.setFileForNextRpcResponse(f);
     }
 
+    public String getServiceVersion() {
+        return this.serviceVersion;
+    }
+
+    public void setServiceVersion(String newValue) {
+        this.serviceVersion = newValue;
+    }
+
     /**
      * <p>Original spec-file function name: create</p>
      * <pre>
+     * Create a KBaseReport with a brief summary of an App run.
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbasereport.CreateParams CreateParams}
+     * @return   parameter "info" of type {@link us.kbase.kbasereport.ReportInfo ReportInfo}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public ReportInfo create(CreateParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<ReportInfo>> retType = new TypeReference<List<ReportInfo>>() {};
+        List<ReportInfo> res = caller.jsonrpcCall("KBaseReport.create", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: create_report</p>
+     * <pre>
+     * A more complex function to create a report that enables the user to specify files and html view that the report should link to
      * </pre>
      * @param   params   instance of type {@link us.kbase.kbasereport.CreateReportParams CreateReportParams}
      * @return   parameter "info" of type {@link us.kbase.kbasereport.ReportInfo ReportInfo}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public ReportInfo create(CreateReportParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public ReportInfo createReport(CreateReportParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<ReportInfo>> retType = new TypeReference<List<ReportInfo>>() {};
-        List<ReportInfo> res = caller.jsonrpcCall("KBaseReport.create", args, retType, true, true, jsonRpcContext);
+        List<ReportInfo> res = caller.jsonrpcCall("KBaseReport.create_report", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};
+        List<Map<String, Object>> res = caller.jsonrpcCall("KBaseReport.status", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 }

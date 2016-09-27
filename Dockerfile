@@ -6,12 +6,7 @@ MAINTAINER KBase Developer
 # any required dependencies for your module.
 
 # RUN apt-get update
-
-# update python ssl libs from adkbase image
-RUN apt-get install python-dev libffi-dev libssl-dev \
-    && pip install pyopenssl ndg-httpsclient pyasn1 \
-    && pip install requests --upgrade \
-    && pip install 'requests[security]' --upgrade
+RUN cpanm -i Config::IniFiles
 
 # -----------------------------------------
 
@@ -21,7 +16,7 @@ RUN chmod 777 /kb/module
 
 WORKDIR /kb/module
 
-RUN make
+RUN make all
 
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 

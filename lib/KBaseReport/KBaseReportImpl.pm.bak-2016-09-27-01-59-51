@@ -1,0 +1,609 @@
+package KBaseReport::KBaseReportImpl;
+use strict;
+use Bio::KBase::Exceptions;
+# Use Semantic Versioning (2.0.0-rc.1)
+# http://semver.org 
+our $VERSION = '0.0.1';
+our $GIT_URL = 'https://cshenry@github.com/kbaseapps/KBaseReport.git';
+our $GIT_COMMIT_HASH = 'bae91ccbbefece90dd319300e84675982f0169ca';
+
+=head1 NAME
+
+KBaseReport
+
+=head1 DESCRIPTION
+
+Module for a simple WS data object report type.
+
+=cut
+
+#BEGIN_HEADER
+use Bio::KBase::AuthToken;
+use Bio::KBase::workspace::Client;
+use Config::IniFiles;
+use Data::Dumper;
+#END_HEADER
+
+sub new
+{
+    my($class, @args) = @_;
+    my $self = {
+    };
+    bless $self, $class;
+    #BEGIN_CONSTRUCTOR
+    
+    my $config_file = $ENV{ KB_DEPLOYMENT_CONFIG };
+    my $cfg = Config::IniFiles->new(-file=>$config_file);
+    my $wsInstance = $cfg->val('KBaseReport','workspace-url');
+    die "no workspace-url defined" unless $wsInstance;
+    
+    $self->{'workspace-url'} = $wsInstance;
+    
+    #END_CONSTRUCTOR
+
+    if ($self->can('_init_instance'))
+    {
+	$self->_init_instance();
+    }
+    return $self;
+}
+
+=head1 METHODS
+
+
+
+=head2 create
+
+  $info = $obj->create($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a KBaseReport.CreateParams
+$info is a KBaseReport.ReportInfo
+CreateParams is a reference to a hash where the following keys are defined:
+	report has a value which is a KBaseReport.Report
+	workspace_name has a value which is a string
+Report is a reference to a hash where the following keys are defined:
+	text_message has a value which is a string
+	warnings has a value which is a reference to a list where each element is a string
+	objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
+WorkspaceObject is a reference to a hash where the following keys are defined:
+	ref has a value which is a KBaseReport.ws_id
+	description has a value which is a string
+ws_id is a string
+ReportInfo is a reference to a hash where the following keys are defined:
+	ref has a value which is a KBaseReport.ws_id
+	name has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a KBaseReport.CreateParams
+$info is a KBaseReport.ReportInfo
+CreateParams is a reference to a hash where the following keys are defined:
+	report has a value which is a KBaseReport.Report
+	workspace_name has a value which is a string
+Report is a reference to a hash where the following keys are defined:
+	text_message has a value which is a string
+	warnings has a value which is a reference to a list where each element is a string
+	objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
+WorkspaceObject is a reference to a hash where the following keys are defined:
+	ref has a value which is a KBaseReport.ws_id
+	description has a value which is a string
+ws_id is a string
+ReportInfo is a reference to a hash where the following keys are defined:
+	ref has a value which is a KBaseReport.ws_id
+	name has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+Create a KBaseReport with a brief summary of an App run.
+
+=back
+
+=cut
+
+sub create
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to create:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'create');
+    }
+
+    my $ctx = $KBaseReport::KBaseReportServer::CallContext;
+    my($info);
+    #BEGIN create
+    #END create
+    my @_bad_returns;
+    (ref($info) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"info\" (value was \"$info\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to create:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'create');
+    }
+    return($info);
+}
+
+
+
+
+=head2 create_report
+
+  $info = $obj->create_report($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a KBaseReport.CreateReportParams
+$info is a KBaseReport.ReportInfo
+CreateReportParams is a reference to a hash where the following keys are defined:
+	message has a value which is a string
+	objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
+	warnings has a value which is a reference to a list where each element is a string
+	html_links has a value which is a reference to a list where each element is a KBaseReport.File
+	html_string has a value which is a string
+	direct_link_array_ref has a value which is an int
+	file_links has a value which is a reference to a list where each element is a KBaseReport.File
+	report_object_name has a value which is a string
+	workspace_name has a value which is a string
+WorkspaceObject is a reference to a hash where the following keys are defined:
+	ref has a value which is a KBaseReport.ws_id
+	description has a value which is a string
+ws_id is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+ReportInfo is a reference to a hash where the following keys are defined:
+	ref has a value which is a KBaseReport.ws_id
+	name has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a KBaseReport.CreateReportParams
+$info is a KBaseReport.ReportInfo
+CreateReportParams is a reference to a hash where the following keys are defined:
+	message has a value which is a string
+	objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
+	warnings has a value which is a reference to a list where each element is a string
+	html_links has a value which is a reference to a list where each element is a KBaseReport.File
+	html_string has a value which is a string
+	direct_link_array_ref has a value which is an int
+	file_links has a value which is a reference to a list where each element is a KBaseReport.File
+	report_object_name has a value which is a string
+	workspace_name has a value which is a string
+WorkspaceObject is a reference to a hash where the following keys are defined:
+	ref has a value which is a KBaseReport.ws_id
+	description has a value which is a string
+ws_id is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+ReportInfo is a reference to a hash where the following keys are defined:
+	ref has a value which is a KBaseReport.ws_id
+	name has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+A more complex function to create a report that enables the user to specify files and html view that the report should link to
+
+=back
+
+=cut
+
+sub create_report
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to create_report:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'create_report');
+    }
+
+    my $ctx = $KBaseReport::KBaseReportServer::CallContext;
+    my($info);
+    #BEGIN create_report
+    #END create_report
+    my @_bad_returns;
+    (ref($info) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"info\" (value was \"$info\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to create_report:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'create_report');
+    }
+    return($info);
+}
+
+
+
+
+=head2 status 
+
+  $return = $obj->status()
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$return is a string
+</pre>
+
+=end html
+
+=begin text
+
+$return is a string
+
+=end text
+
+=item Description
+
+Return the module status. This is a structure including Semantic Versioning number, state and git info.
+
+=back
+
+=cut
+
+sub status {
+    my($return);
+    #BEGIN_STATUS
+    $return = {"state" => "OK", "message" => "", "version" => $VERSION,
+               "git_url" => $GIT_URL, "git_commit_hash" => $GIT_COMMIT_HASH};
+    #END_STATUS
+    return($return);
+}
+
+=head1 TYPES
+
+
+
+=head2 ws_id
+
+=over 4
+
+
+
+=item Description
+
+@id ws
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 WorkspaceObject
+
+=over 4
+
+
+
+=item Description
+
+Represents a Workspace object with some brief description text
+that can be associated with the object.
+
+@optional description
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+ref has a value which is a KBaseReport.ws_id
+description has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+ref has a value which is a KBaseReport.ws_id
+description has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 Report
+
+=over 4
+
+
+
+=item Description
+
+A simple Report of a method run in KBase.
+
+It only provides for now a way to display a fixed width text output summary message, a 
+list of warnings, and a list of objects created (each with descriptions).
+
+@optional warnings
+@metadata ws length(warnings) as Warnings
+@metadata ws length(text_message) as Size(characters)
+@metadata ws length(objects_created) as Objects Created
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+text_message has a value which is a string
+warnings has a value which is a reference to a list where each element is a string
+objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+text_message has a value which is a string
+warnings has a value which is a reference to a list where each element is a string
+objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
+
+
+=end text
+
+=back
+
+
+
+=head2 CreateParams
+
+=over 4
+
+
+
+=item Description
+
+Provide the report information.  The structure is:
+    params = {
+        report: {
+            text_message: '',
+            warnings: ['w1'],
+            objects_created: [ {
+                ref: 'ws/objid',
+                description: ''
+            }]
+        },
+        workspace_name: 'ws'
+    }
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report has a value which is a KBaseReport.Report
+workspace_name has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report has a value which is a KBaseReport.Report
+workspace_name has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 ReportInfo
+
+=over 4
+
+
+
+=item Description
+
+The reference to the saved KBaseReport.  The structure is:
+    reportInfo = {
+        ref: 'ws/objid/ver',
+        name: 'myreport.2262323452'
+    }
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+ref has a value which is a KBaseReport.ws_id
+name has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+ref has a value which is a KBaseReport.ws_id
+name has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 File
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 CreateReportParams
+
+=over 4
+
+
+
+=item Description
+
+Parameters used to create a more complex report with file and html links
+
+        The following arguments allow the user to specify the classical data fields in the report object:
+string message - simple text message to store in report object
+list <WorkspaceObject> objects_created;
+list <string> warnings - a list of warning messages in simple text
+
+The following argument allows the user to specify the location of html files/directories that the report widget will render <or> link to:
+list <fileRef> html_links - a list of paths or shock node IDs pointing to a single flat html file or to the top level directory of a website
+
+The report widget can render one html view directly. Set one of the following fields to decide which view to render:
+string html_string - simple html text that will be rendered within the report widget
+int  direct_link_array_ref - use this to specify the index of the page in html_links to view directly in the report widget (ignored if html_string is set)
+
+The following argument allows the user to specify the location of files that the report widget should link for download:
+list <fileRef> file_links - a list of paths or shock node IDs pointing to a single flat file
+
+The following parameters indicate where the report object should be saved in the workspace:
+string report_object_name - name to use for the report object (job ID is used if left unspecified)
+string workspace_name - name of workspace where object should be saved
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+message has a value which is a string
+objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
+warnings has a value which is a reference to a list where each element is a string
+html_links has a value which is a reference to a list where each element is a KBaseReport.File
+html_string has a value which is a string
+direct_link_array_ref has a value which is an int
+file_links has a value which is a reference to a list where each element is a KBaseReport.File
+report_object_name has a value which is a string
+workspace_name has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+message has a value which is a string
+objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
+warnings has a value which is a reference to a list where each element is a string
+html_links has a value which is a reference to a list where each element is a KBaseReport.File
+html_string has a value which is a string
+direct_link_array_ref has a value which is an int
+file_links has a value which is a reference to a list where each element is a KBaseReport.File
+report_object_name has a value which is a string
+workspace_name has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=cut
+
+1;
