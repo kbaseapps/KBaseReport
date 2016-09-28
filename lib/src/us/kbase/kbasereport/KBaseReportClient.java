@@ -181,20 +181,20 @@ public class KBaseReportClient {
     }
 
     /**
-     * <p>Original spec-file function name: create_report</p>
+     * <p>Original spec-file function name: create_extended_report</p>
      * <pre>
      * A more complex function to create a report that enables the user to specify files and html view that the report should link to
      * </pre>
-     * @param   params   instance of type {@link us.kbase.kbasereport.CreateReportParams CreateReportParams}
+     * @param   params   instance of type {@link us.kbase.kbasereport.CreateExtendedReportParams CreateExtendedReportParams}
      * @return   parameter "info" of type {@link us.kbase.kbasereport.ReportInfo ReportInfo}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public ReportInfo createReport(CreateReportParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public ReportInfo createExtendedReport(CreateExtendedReportParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<ReportInfo>> retType = new TypeReference<List<ReportInfo>>() {};
-        List<ReportInfo> res = caller.jsonrpcCall("KBaseReport.create_report", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        List<ReportInfo> res = caller.jsonrpcCall("KBaseReport.create_extended_report", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 

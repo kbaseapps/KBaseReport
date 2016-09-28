@@ -24,7 +24,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "handle",
     "description",
-    "name"
+    "name",
+    "URL"
 })
 public class LinkedFile {
 
@@ -34,6 +35,8 @@ public class LinkedFile {
     private String description;
     @JsonProperty("name")
     private String name;
+    @JsonProperty("URL")
+    private String URL;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("handle")
@@ -81,6 +84,21 @@ public class LinkedFile {
         return this;
     }
 
+    @JsonProperty("URL")
+    public String getURL() {
+        return URL;
+    }
+
+    @JsonProperty("URL")
+    public void setURL(String URL) {
+        this.URL = URL;
+    }
+
+    public LinkedFile withURL(String URL) {
+        this.URL = URL;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -93,7 +111,7 @@ public class LinkedFile {
 
     @Override
     public String toString() {
-        return ((((((((("LinkedFile"+" [handle=")+ handle)+", description=")+ description)+", name=")+ name)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((("LinkedFile"+" [handle=")+ handle)+", description=")+ description)+", name=")+ name)+", URL=")+ URL)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

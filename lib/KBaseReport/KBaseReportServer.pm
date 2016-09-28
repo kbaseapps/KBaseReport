@@ -29,13 +29,13 @@ our $CallContext;
 
 our %return_counts = (
         'create' => 1,
-        'create_report' => 1,
+        'create_extended_report' => 1,
         'status' => 1,
 );
 
 our %method_authentication = (
         'create' => 'required',
-        'create_report' => 'required',
+        'create_extended_report' => 'required',
 );
 
 sub _build_valid_methods
@@ -43,7 +43,7 @@ sub _build_valid_methods
     my($self) = @_;
     my $methods = {
         'create' => 1,
-        'create_report' => 1,
+        'create_extended_report' => 1,
         'status' => 1,
     };
     return $methods;
