@@ -293,7 +293,6 @@ sub create_extended_report
     my $ctx = $KBaseReport::KBaseReportServer::CallContext;
     my($info);
     #BEGIN create_extended_report
-    #print &Dumper ($params);
     my $workspace_name = $params->{workspace_name};
     my $token=$ctx->token;
     my $provenance=$ctx->provenance;
@@ -307,8 +306,6 @@ sub create_extended_report
 
 	my $shock = { url => $shock_url, token => $token };
 	my $handle_service = Bio::KBase::HandleService->new($handle_url);
-
-	print &Dumper ($params->{file_links}->[0]->{path});
     my @file_arr;
     my @html_arr;
 
