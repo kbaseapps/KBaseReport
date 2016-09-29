@@ -3,31 +3,39 @@
 */
 module KBaseReport {
     /* @id ws */
+
     typedef string ws_id;
+
     /*
         Reference to a handle
         @id handle
     */
+
     typedef string handle_ref;
+
     /*
         Represents a Workspace object with some brief description text
         that can be associated with the object.
         @optional description
     */
+
     typedef structure {
         ws_id ref;
         string description;
     } WorkspaceObject;
+
     /*
         Represents a file or html archive that the report should like to
         @optional description
     */
+
     typedef structure {
         handle_ref handle;
         string description;
         string name;
         string URL;
     } LinkedFile;
+
     /*
         A simple Report of a method run in KBase.
         It only provides for now a way to display a fixed width text output summary message, a
@@ -37,6 +45,7 @@ module KBaseReport {
         @metadata ws length(text_message) as Size(characters)
         @metadata ws length(objects_created) as Objects Created
     */
+
     typedef structure {
         string text_message;
         list <string> warnings;
@@ -46,6 +55,7 @@ module KBaseReport {
         string direct_html;
         int direct_html_link_index;
     } Report;
+
     /*
         Provide the report information.  The structure is:
             params = {
@@ -60,10 +70,13 @@ module KBaseReport {
                 workspace_name: 'ws'
             }
     */
+
+
     typedef structure {
         Report report;
         string workspace_name;
     } CreateParams;
+
     /*
         The reference to the saved KBaseReport.  The structure is:
             reportInfo = {
@@ -71,14 +84,18 @@ module KBaseReport {
                 name: 'myreport.2262323452'
             }
     */
+
     typedef structure {
         ws_id ref;
         string name;
     } ReportInfo;
+
     /*
-        Create a KBaseReport with a brief summary of an App run.
+            Create a KBaseReport with a brief summary of an App run.
     */
+
     funcdef create(CreateParams params) returns (ReportInfo info) authentication required;
+
     typedef structure {
         string path;
         string shock_id;
