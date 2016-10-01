@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org
 our $VERSION = "0.0.1";
 our $GIT_URL = "https://github.com/kbaseapps/KBaseReport.git";
-our $GIT_COMMIT_HASH = "068b1beb5dc933c0b3fdec0c49aaec75d055a4c9";
+our $GIT_COMMIT_HASH = "86fbc21b0b98d066579277ea1277396b09d00644";
 
 =head1 NAME
 
@@ -23,6 +23,9 @@ use Bio::KBase::workspace::Client;
 use Bio::KBase::HandleService;
 use Config::IniFiles;
 use JSON;
+use MIME::Base64;
+use URI;
+use UUID::Random;
 use Data::Dumper;
 
 
@@ -183,6 +186,53 @@ sub create
     my $ctx = $KBaseReport::KBaseReportServer::CallContext;
     my($info);
     #BEGIN create
+    my $token=$ctx->token;
+    my $provenance=$ctx->provenance;
+    my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
+
+    print "Creating KBase Report\n";
+
+    if (!defined $params->{report}){
+
+        print "Field report must be defined to save a report";
+    }
+    if (!defined $params->{workspace_name}){
+
+        print "Field workspace_name must be defined to save a report";
+    }
+
+    my $uid = UUID::Random::generate;
+    my $reportName = "report_".$uid;
+
+    if (defined $params->{prefix}){
+        $reportName=$params->{prefix}.$reportName;
+    }
+    print "Report Name $reportName\n";
+
+    my $obj_info_list = undef;
+    eval {
+        $obj_info_list = $wsClient->save_objects({
+            'workspace'=>$params->{workspace_name},
+            'objects'=>[{
+                'type'=>'KBaseReport.Report',
+                'data'=>$params->{report},
+                'name'=>$reportName,
+                'meta'=> {},
+                'hidden' => 0,
+                'provenance'=>$provenance
+            }]
+        });
+    };
+    if ($@) {
+        die "Error saving modified genome object to workspace:\n".$@;
+    }
+    my $wsRef = $obj_info_list->[0]->[6]."/".$obj_info_list->[0]->[0]."/".$obj_info_list->[0]->[4];
+    $info = {
+        ref => $wsRef,
+        name => $obj_info_list->[0]->[1]
+    };
+
+    return $info;
     #END create
     my @_bad_returns;
     (ref($info) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"info\" (value was \"$info\")");
@@ -385,6 +435,7 @@ sub create_extended_report
         direct_html => $params->{direct_html},
         objects_created => $params->{objects_created}
     };
+
 	my $obj_info_list = undef;
     eval {
         $obj_info_list = $wsClient->save_objects({
