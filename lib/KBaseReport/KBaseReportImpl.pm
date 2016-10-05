@@ -75,19 +75,20 @@ sub format_images_base64{
     for (my $i=0; $i<@img_links; $i++){
         my @image_type = split /\./, $img_links[$i];
         # prefix get added to the image url data:image/png;base64,
-        my $leaderString = "data:image/$image_type[-1];base64,";
+        my $leaderString = "\"data:image/$image_type[-1];base64,";
         if ($img_links[$i] =~ /base64/){
             next;
         }
         else{
             my $encoded = encode_base64($img_links[$i]);
-            $imgLinksHash{$img_links[$i]} = $leaderString.$encoded;
+            chomp $encoded;
+            $imgLinksHash{$img_links[$i]} = $leaderString.$encoded."\"";
         }
     }
     #print &Dumper (\%imgLinksHash);
     while (defined(my $input = <INFILE>)){
         chomp $input;
-        if ($input =~ /\<img(.+)/){
+        if ($input =~ /\<img(.+)/ && $input !~ /base64/ ){
             if($input=~ /src=\"((\w|_|\\|-|\/|\.|:)+)\"/){
                 my $old_src = $1;
                 if (exists $imgLinksHash{$old_src} ){
@@ -148,8 +149,14 @@ sub new
     my $cfg = Config::IniFiles->new(-file=>$config_file);
     my $wsInstance = $cfg->val('KBaseReport','workspace-url');
     die "no workspace-url defined" unless $wsInstance;
+    my $ShockInstance = $cfg->val('KBaseReport','shock-url');
+    die "no shock-url defined" unless $ShockInstance;
+    my $HandleInstance = $cfg->val('KBaseReport','handle-service-url');
+    die "no handle-service-url defined" unless $HandleInstance;
 
     $self->{'workspace-url'} = $wsInstance;
+    $self->{'shock-url'} = $ShockInstance;
+    $self->{'handle-service-url'} = $HandleInstance;
 
     #END_CONSTRUCTOR
 
@@ -428,13 +435,9 @@ sub create_extended_report
     my $file_link_arr = $params->{file_links};
     my $html_link_arr = $params->{html_links};
 
+	my $shock = { url => $self->{'shock-url'}, token => $token };
+    my $handle_service = Bio::KBase::HandleService->new($self->{'handle-service-url'});
 
-    my ($shock_url, $handle_url);
-    $shock_url  ||= 'https://ci.kbase.us/services/shock-api';
-	$handle_url ||= 'https://ci.kbase.us/services/handle_service';
-
-	my $shock = { url => $shock_url, token => $token };
-	my $handle_service = Bio::KBase::HandleService->new($handle_url);
     my @file_arr;
     my @html_arr;
     my $html_string = format_html_string_base64($params->{direct_html});
@@ -476,7 +479,6 @@ sub create_extended_report
                 print "Error!! cannot access file at $file_link_arr->[$i]->{path}\n";
                 next;
             }
-
         }
         push (@file_arr, $LinkedFile);
     }
@@ -547,7 +549,7 @@ sub create_extended_report
     print &Dumper ($obj_info_list);
     my $wsRef = $obj_info_list->[0]->[6]."/".$obj_info_list->[0]->[0]."/".$obj_info_list->[0]->[4];
     $info = {
-    	ws_id => $wsRef,
+    	ref => $wsRef,
     	name => $params->{report_object_name}
 
     };
