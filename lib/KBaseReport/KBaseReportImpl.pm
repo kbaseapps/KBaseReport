@@ -40,7 +40,6 @@ sub format_html_string_base64{
     my @img_links = $html_string =~ /<img\b(?=\s)(?=(?:[^>=]|='[^']*'|="[^"]*"|=[^'"][^\s>]*)*?\ssrc=['"]([^"]*)['"])(?:[^>=]|='[^']*'|="[^"]*"|=[^'"\s]*)*\s?>/g;
     my %imgLinksHash;
     for (my $i=0; $i<@img_links; $i++){
-
         if ($img_links[$i] =~ /base64/){
             next;
         }
@@ -86,7 +85,6 @@ sub format_images_base64{
         }
     }
     #print &Dumper (\%imgLinksHash);
-
     while (defined(my $input = <INFILE>)){
         chomp $input;
         if ($input =~ /\<img(.+)/){
@@ -97,18 +95,15 @@ sub format_images_base64{
                     $input =~ s/(<\s*img\s+.*src\s*=\s*)(")?.*?(?(2)")([\s>])/$1$imgLinksHash{$old_src}$3/sig;
                     print OUTFILE "$input\n";
                 }
-
             }
         }
         else{
             print OUTFILE "$input\n"
         }
-
     }
     close INFILE;
     close OUTFILE;
     return $out_path;
-
 }
 
 
@@ -442,7 +437,6 @@ sub create_extended_report
 	my $handle_service = Bio::KBase::HandleService->new($handle_url);
     my @file_arr;
     my @html_arr;
-
     my $html_string = format_html_string_base64($params->{direct_html});
     #print "$html_string\n";
 
@@ -451,7 +445,6 @@ sub create_extended_report
         my $handle_return;
         my $LinkedFile = {};
         if (defined $file_link_arr->[$i]->{shock_id}){
-
             if ($handle_service) {
                 $shock_out->{data}->{id} = $file_link_arr->[$i]->{shock_id};
                 $handle_return = create_handle($shock, $shock_out, $handle_service);
@@ -463,10 +456,8 @@ sub create_extended_report
                  name => '',
                  URL => $url
               };
-
         }
         else{
-
             if ((-f $file_link_arr->[$i]->{path}) && (defined $file_link_arr->[$i]->{path})){
 
                 $shock_out = curl_upload_shock ($file_link_arr->[$i]->{path}, $shock);
@@ -480,12 +471,10 @@ sub create_extended_report
                     name => '',
                     URL => $url
                 };
-
             }
             else{
                 print "Error!! cannot access file at $file_link_arr->[$i]->{path}\n";
                 next;
-
             }
 
         }
@@ -493,7 +482,6 @@ sub create_extended_report
     }
 
     for (my $i=0; $i< @$html_link_arr; $i++){
-
         my $shock_out;
         my $handle_return;
         my $LinkedFile = {};
@@ -526,13 +514,10 @@ sub create_extended_report
                   };
             }
             else{
-
                 print "Error!! cannot access html file at $html_link_arr->[$i]->{path}\n";
                 next;
             }
         }
-
-
         push (@html_arr, $LinkedFile);
     }
 
