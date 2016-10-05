@@ -8,6 +8,8 @@ MAINTAINER KBase Developer
 # RUN apt-get update
 RUN cpanm -i Config::IniFiles
 RUN cpanm -i UUID::Random
+RUN cpanm -i HTML::SimpleLinkExtor
+RUN cpanm -i WWW::Mechanize --force
 
 # -----------------------------------------
 

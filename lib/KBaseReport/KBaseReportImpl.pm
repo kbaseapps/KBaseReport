@@ -25,8 +25,91 @@ use Config::IniFiles;
 use JSON;
 use MIME::Base64;
 use URI;
+use HTML::Parser;
+use WWW::Mechanize;
+use HTML::LinkExtor;
+use File::Slurp;
+use HTML::TreeBuilder;
+use HTML::SimpleLinkExtor;
+use File::Path;
 use UUID::Random;
 use Data::Dumper;
+
+sub format_html_string_base64{
+    my ($html_string) = @_;
+    my @img_links = $html_string =~ /<img\b(?=\s)(?=(?:[^>=]|='[^']*'|="[^"]*"|=[^'"][^\s>]*)*?\ssrc=['"]([^"]*)['"])(?:[^>=]|='[^']*'|="[^"]*"|=[^'"\s]*)*\s?>/g;
+    my %imgLinksHash;
+    for (my $i=0; $i<@img_links; $i++){
+
+        if ($img_links[$i] =~ /base64/){
+            next;
+        }
+        else{
+        my @image_type = split /\./, $img_links[$i];
+        # prefix get added to the image url data:image/png;base64,
+        my $leaderString = "data:image/$image_type[-1];base64,";
+        my $encoded = encode_base64($img_links[$i]);
+        my $dest = $leaderString.$encoded;
+        #print "$img_links[$i]\t$dest\n";
+        $html_string =~ s/$img_links[$i]/$dest/;
+        }
+    }
+
+   return $html_string;
+}
+
+sub format_images_base64{
+
+    my ($html_file_link) = @_;
+
+    my @f_split = split /\//, $html_file_link;
+    my $tmpDir = "/kb/module/work/tmp/tmphtml";
+    mkpath([$tmpDir], 1);
+    my $out_path = $tmpDir."/embedded_".$f_split[-1];
+
+    open INFILE, "$html_file_link" or die "Couldn't open html file $!\n";
+    open OUTFILE, ">$out_path" or die "Couldn't open html out file $!\n";
+    my $extor = HTML::SimpleLinkExtor->new();
+    $extor->parse_file($html_file_link);
+    my @img_links = $extor->img;
+    my %imgLinksHash;
+    for (my $i=0; $i<@img_links; $i++){
+        my @image_type = split /\./, $img_links[$i];
+        # prefix get added to the image url data:image/png;base64,
+        my $leaderString = "data:image/$image_type[-1];base64,";
+        if ($img_links[$i] =~ /base64/){
+            next;
+        }
+        else{
+            my $encoded = encode_base64($img_links[$i]);
+            $imgLinksHash{$img_links[$i]} = $leaderString.$encoded;
+        }
+    }
+    #print &Dumper (\%imgLinksHash);
+
+    while (defined(my $input = <INFILE>)){
+        chomp $input;
+        if ($input =~ /\<img(.+)/){
+            if($input=~ /src=\"((\w|_|\\|-|\/|\.|:)+)\"/){
+                my $old_src = $1;
+                if (exists $imgLinksHash{$old_src} ){
+                    #print "$imgLinksHash{$old_src}\n";
+                    $input =~ s/(<\s*img\s+.*src\s*=\s*)(")?.*?(?(2)")([\s>])/$1$imgLinksHash{$old_src}$3/sig;
+                    print OUTFILE "$input\n";
+                }
+
+            }
+        }
+        else{
+            print OUTFILE "$input\n"
+        }
+
+    }
+    close INFILE;
+    close OUTFILE;
+    return $out_path;
+
+}
 
 
 sub curl_upload_shock {
@@ -350,6 +433,7 @@ sub create_extended_report
     my $file_link_arr = $params->{file_links};
     my $html_link_arr = $params->{html_links};
 
+
     my ($shock_url, $handle_url);
     $shock_url  ||= 'https://ci.kbase.us/services/shock-api';
 	$handle_url ||= 'https://ci.kbase.us/services/handle_service';
@@ -358,6 +442,9 @@ sub create_extended_report
 	my $handle_service = Bio::KBase::HandleService->new($handle_url);
     my @file_arr;
     my @html_arr;
+
+    my $html_string = format_html_string_base64($params->{direct_html});
+    #print "$html_string\n";
 
     for (my $i=0; $i< @$file_link_arr; $i++){
         my $shock_out;
@@ -380,22 +467,33 @@ sub create_extended_report
         }
         else{
 
-             $shock_out = curl_upload_shock ($file_link_arr->[$i]->{path}, $shock);
-             if ($handle_service) {
-                $handle_return = create_handle($shock, $shock_out, $handle_service);
-              }
-             my $url = generate_shock_url($handle_return);
-             $LinkedFile = {
-                 handle => $handle_return->{hid},
-                 description => '',
-                 name => '',
-                 URL => $url
-              };
+            if ((-f $file_link_arr->[$i]->{path}) && (defined $file_link_arr->[$i]->{path})){
+
+                $shock_out = curl_upload_shock ($file_link_arr->[$i]->{path}, $shock);
+                if ($handle_service) {
+                    $handle_return = create_handle($shock, $shock_out, $handle_service);
+                }
+                my $url = generate_shock_url($handle_return);
+                $LinkedFile = {
+                    handle => $handle_return->{hid},
+                    description => '',
+                    name => '',
+                    URL => $url
+                };
+
+            }
+            else{
+                print "Error!! cannot access file at $file_link_arr->[$i]->{path}\n";
+                next;
+
+            }
+
         }
         push (@file_arr, $LinkedFile);
     }
 
     for (my $i=0; $i< @$html_link_arr; $i++){
+
         my $shock_out;
         my $handle_return;
         my $LinkedFile = {};
@@ -413,18 +511,28 @@ sub create_extended_report
               };
         }
         else{
-             $shock_out = curl_upload_shock ($html_link_arr->[$i]->{path}, $shock);
-             if ($handle_service) {
-                $handle_return = create_handle($shock, $shock_out, $handle_service);
-              }
-             my $url = generate_shock_url($handle_return);
-             $LinkedFile = {
-                 handle => $handle_return->{hid},
-                 description => '',
-                 name => '',
-                 URL => $url
-              };
+             if ((-f $html_link_arr->[$i]->{path}) && (defined $html_link_arr->[$i]->{path})){
+                my $out_link =format_images_base64($html_link_arr->[$i]->{path});
+                 $shock_out = curl_upload_shock ($out_link, $shock);
+                 if ($handle_service) {
+                    $handle_return = create_handle($shock, $shock_out, $handle_service);
+                  }
+                 my $url = generate_shock_url($handle_return);
+                 $LinkedFile = {
+                     handle => $handle_return->{hid},
+                     description => '',
+                     name => '',
+                     URL => $url
+                  };
+            }
+            else{
+
+                print "Error!! cannot access html file at $html_link_arr->[$i]->{path}\n";
+                next;
+            }
         }
+
+
         push (@html_arr, $LinkedFile);
     }
 
@@ -432,7 +540,7 @@ sub create_extended_report
         text_message => $params->{message},
         file_links => \@file_arr,
         html_links => \@html_arr,
-        direct_html => $params->{direct_html},
+        direct_html => $html_string,
         objects_created => $params->{objects_created}
     };
 
@@ -451,7 +559,7 @@ sub create_extended_report
     if ($@) {
         die "Error saving modified genome object to workspace:\n".$@;
     }
-    print &Dumper ($obj_info_list);
+    print &Dumper ($report);
     my $wsRef = $obj_info_list->[0]->[6]."/".$obj_info_list->[0]->[0]."/".$obj_info_list->[0]->[4];
     $info = {
     	ws_id => $wsRef,
