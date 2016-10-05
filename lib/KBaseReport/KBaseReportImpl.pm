@@ -44,13 +44,13 @@ sub format_html_string_base64{
             next;
         }
         else{
-        my @image_type = split /\./, $img_links[$i];
-        # prefix get added to the image url data:image/png;base64,
-        my $leaderString = "data:image/$image_type[-1];base64,";
-        my $encoded = encode_base64($img_links[$i]);
-        my $dest = $leaderString.$encoded;
-        #print "$img_links[$i]\t$dest\n";
-        $html_string =~ s/$img_links[$i]/$dest/;
+            my @image_type = split /\./, $img_links[$i];
+            # prefix get added to the image url data:image/png;base64,
+            my $leaderString = "data:image/$image_type[-1];base64,";
+            my $encoded = encode_base64($img_links[$i]);
+            my $dest = $leaderString.$encoded;
+            #print "$img_links[$i]\t$dest\n";
+            $html_string =~ s/$img_links[$i]/$dest/;
         }
     }
 
