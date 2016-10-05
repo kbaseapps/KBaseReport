@@ -544,7 +544,7 @@ sub create_extended_report
     if ($@) {
         die "Error saving modified genome object to workspace:\n".$@;
     }
-    print &Dumper ($report);
+    print &Dumper ($obj_info_list);
     my $wsRef = $obj_info_list->[0]->[6]."/".$obj_info_list->[0]->[0]."/".$obj_info_list->[0]->[4];
     $info = {
     	ws_id => $wsRef,
