@@ -48,6 +48,7 @@ sub format_html_string_base64{
             # prefix get added to the image url data:image/png;base64,
             my $leaderString = "data:image/$image_type[-1];base64,";
             my $encoded = encode_base64($img_links[$i]);
+            chomp $encoded;
             my $dest = $leaderString.$encoded;
             #print "$img_links[$i]\t$dest\n";
             $html_string =~ s/$img_links[$i]/$dest/;
@@ -437,7 +438,6 @@ sub create_extended_report
 
 	my $shock = { url => $self->{'shock-url'}, token => $token };
     my $handle_service = Bio::KBase::HandleService->new($self->{'handle-service-url'});
-
     my @file_arr;
     my @html_arr;
     my $html_string = format_html_string_base64($params->{direct_html});
@@ -453,12 +453,12 @@ sub create_extended_report
                 $handle_return = create_handle($shock, $shock_out, $handle_service);
             }
             my $url = generate_shock_url($handle_return);
-             $LinkedFile = {
-                 handle => $handle_return->{hid},
-                 description => '',
-                 name => '',
-                 URL => $url
-              };
+            $LinkedFile = {
+                handle => $handle_return->{hid},
+                description => $file_link_arr->[$i]->{description},
+                name => $file_link_arr->[$i]->{name},
+                URL => $url
+            };
         }
         else{
             if ((-f $file_link_arr->[$i]->{path}) && (defined $file_link_arr->[$i]->{path})){
@@ -470,8 +470,8 @@ sub create_extended_report
                 my $url = generate_shock_url($handle_return);
                 $LinkedFile = {
                     handle => $handle_return->{hid},
-                    description => '',
-                    name => '',
+                    description => $file_link_arr->[$i]->{description},
+                    name => $file_link_arr->[$i]->{name},
                     URL => $url
                 };
             }
@@ -495,25 +495,25 @@ sub create_extended_report
             my $url = generate_shock_url($handle_return);
              $LinkedFile = {
                  handle => $handle_return->{hid},
-                 description => '',
-                 name => '',
+                 description => $html_link_arr->[$i]->{description},
+                 name => $html_link_arr->[$i]->{name},
                  URL => $url
               };
         }
         else{
-             if ((-f $html_link_arr->[$i]->{path}) && (defined $html_link_arr->[$i]->{path})){
+            if ((-f $html_link_arr->[$i]->{path}) && (defined $html_link_arr->[$i]->{path})){
                 my $out_link =format_images_base64($html_link_arr->[$i]->{path});
-                 $shock_out = curl_upload_shock ($out_link, $shock);
-                 if ($handle_service) {
+                $shock_out = curl_upload_shock ($out_link, $shock);
+                if ($handle_service) {
                     $handle_return = create_handle($shock, $shock_out, $handle_service);
-                  }
-                 my $url = generate_shock_url($handle_return);
-                 $LinkedFile = {
-                     handle => $handle_return->{hid},
-                     description => '',
-                     name => '',
-                     URL => $url
-                  };
+                }
+                my $url = generate_shock_url($handle_return);
+                $LinkedFile = {
+                    handle => $handle_return->{hid},
+                    description => $html_link_arr->[$i]->{description},
+                    name =>  $html_link_arr->[$i]->{name},
+                    URL => $url
+                };
             }
             else{
                 print "Error!! cannot access html file at $html_link_arr->[$i]->{path}\n";
