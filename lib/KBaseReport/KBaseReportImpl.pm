@@ -116,11 +116,9 @@ sub format_images_base64{
 }
 
 sub zip_archive {
-
     my ($path) = @_;
     my $zip = Archive::Zip->new();
     my $outpath;
-
     if (-d $path){
         print "processing html folder at $path\n";
         $zip->addTree( $path);
@@ -129,7 +127,6 @@ sub zip_archive {
         my @folder_name = split /\//, $path;
         $outpath = $tmpDir."/".$folder_name[-1].".zip";
         $zip->writeToFileNamed($outpath);
-
     }
     elsif (-f $path){
         print "processing html file at $path\n";
@@ -533,12 +530,12 @@ sub create_extended_report
                 $handle_return = create_handle($shock, $shock_out, $handle_service);
             }
             my $url = generate_shock_url($handle_return);
-             $LinkedFile = {
-                 handle => $handle_return->{hid},
-                 description => $html_link_arr->[$i]->{description},
-                 name => $html_link_arr->[$i]->{name},
-                 URL => $url
-              };
+            $LinkedFile = {
+                handle => $handle_return->{hid},
+                description => $html_link_arr->[$i]->{description},
+                name => $html_link_arr->[$i]->{name},
+                URL => $url
+            };
         }
 
         else{
