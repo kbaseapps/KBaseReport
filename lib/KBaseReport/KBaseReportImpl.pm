@@ -34,6 +34,7 @@ use HTML::SimpleLinkExtor;
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use List::Util qw(first);
 use IO::Compress::Zip qw(zip $ZipError) ;
+use File::Copy qw(copy);
 use File::Path;
 use File::Basename;
 use UUID::Random;
@@ -132,9 +133,10 @@ sub zip_archive {
     }
     elsif (-f $path){
         print "processing html file at $path\n";
-        $zip->addFile( $path);
-        my $tmpDir = "/kb/module/work/tmp/zippedHtml";
+        my $tmpDir = "/kb/module/work/tmp/ZippedHtml";
         mkpath([$tmpDir], 1);
+        copy $path, $tmpDir;
+        $zip->addTree($tmpDir);
         my @folder_name = split /\//, $path;
         $outpath = $tmpDir."/".$folder_name[-1].".zip";
         $zip->writeToFileNamed($outpath);
@@ -341,7 +343,7 @@ sub create
                 'data'=>$params->{report},
                 'name'=>$reportName,
                 'meta'=> {},
-                'hidden' => 0,
+                'hidden' => 1,
                 'provenance'=>$provenance
             }]
         });
@@ -580,6 +582,7 @@ sub create_extended_report
                 'type'=>'KBaseReport.Report',
                 'data'=>$report,
                 'name'=>$params->{report_object_name},
+                'hidden' => 0,
                 'provenance'=>$provenance
             }]
         });
