@@ -10,6 +10,7 @@ RUN cpanm -i Config::IniFiles
 RUN cpanm -i UUID::Random
 RUN cpanm -i HTML::SimpleLinkExtor
 RUN cpanm -i WWW::Mechanize --force
+RUN cpanm -i MIME::Base64
 RUN apt-get -y install nano
 
 # -----------------------------------------
