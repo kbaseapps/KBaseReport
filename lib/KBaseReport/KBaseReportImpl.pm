@@ -31,7 +31,12 @@ use HTML::LinkExtor;
 use File::Slurp;
 use HTML::TreeBuilder;
 use HTML::SimpleLinkExtor;
+use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
+use List::Util qw(first);
+use IO::Compress::Zip qw(zip $ZipError) ;
+use File::Copy qw(copy);
 use File::Path;
+use File::Basename;
 use UUID::Random;
 use Data::Dumper;
 
@@ -39,6 +44,7 @@ sub format_html_string_base64{
     my ($html_string) = @_;
     my @img_links = $html_string =~ /<img\b(?=\s)(?=(?:[^>=]|='[^']*'|="[^"]*"|=[^'"][^\s>]*)*?\ssrc=['"]([^"]*)['"])(?:[^>=]|='[^']*'|="[^"]*"|=[^'"\s]*)*\s?>/g;
     my %imgLinksHash;
+    #print &Dumper (\@img_links);
     for (my $i=0; $i<@img_links; $i++){
         if ($img_links[$i] =~ /base64/){
             next;
@@ -47,7 +53,8 @@ sub format_html_string_base64{
             my @image_type = split /\./, $img_links[$i];
             # prefix get added to the image url data:image/png;base64,
             my $leaderString = "data:image/$image_type[-1];base64,";
-            my $encoded = encode_base64($img_links[$i]);
+            my $img_link = "/kb/module/data/".$img_links[$i];
+            my $encoded = MIME::Base64::encode_base64(read_file($img_link));
             chomp $encoded;
             my $dest = $leaderString.$encoded;
             #print "$img_links[$i]\t$dest\n";
@@ -81,7 +88,7 @@ sub format_images_base64{
             next;
         }
         else{
-            my $encoded = encode_base64($img_links[$i]);
+            my $encoded = MIME::Base64::encode_base64($img_links[$i]);
             chomp $encoded;
             $imgLinksHash{$img_links[$i]} = $leaderString.$encoded."\"";
         }
@@ -108,6 +115,38 @@ sub format_images_base64{
     return $out_path;
 }
 
+sub zip_archive {
+
+    my ($path) = @_;
+    my $zip = Archive::Zip->new();
+    my $outpath;
+
+    if (-d $path){
+        print "processing html folder at $path\n";
+        $zip->addTree( $path);
+        my $tmpDir = "/kb/module/work/tmp/zippedHtml";
+        mkpath([$tmpDir], 1);
+        my @folder_name = split /\//, $path;
+        $outpath = $tmpDir."/".$folder_name[-1].".zip";
+        $zip->writeToFileNamed($outpath);
+
+    }
+    elsif (-f $path){
+        print "processing html file at $path\n";
+        my $tmpDir = "/kb/module/work/tmp/ZippedHtml";
+        mkpath([$tmpDir], 1);
+        copy $path, $tmpDir;
+        $zip->addTree($tmpDir);
+        my @folder_name = split /\//, $path;
+        $outpath = $tmpDir."/".$folder_name[-1].".zip";
+        $zip->writeToFileNamed($outpath);
+    }
+    else{
+        print "Html input file/dir type unknown\n";
+        die;
+    }
+    return $outpath;
+}
 
 sub curl_upload_shock {
     my ($file, $shock) = @_;
@@ -304,7 +343,7 @@ sub create
                 'data'=>$params->{report},
                 'name'=>$reportName,
                 'meta'=> {},
-                'hidden' => 0,
+                'hidden' => 1,
                 'provenance'=>$provenance
             }]
         });
@@ -442,6 +481,7 @@ sub create_extended_report
     my @html_arr;
     my $html_string = format_html_string_base64($params->{direct_html});
     #print "$html_string\n";
+    #die;
 
     for (my $i=0; $i< @$file_link_arr; $i++){
         my $shock_out;
@@ -500,11 +540,13 @@ sub create_extended_report
                  URL => $url
               };
         }
+
         else{
-            if ((-f $html_link_arr->[$i]->{path}) && (defined $html_link_arr->[$i]->{path})){
-                my $out_link =format_images_base64($html_link_arr->[$i]->{path});
-                $shock_out = curl_upload_shock ($out_link, $shock);
-                if ($handle_service) {
+
+            if (defined $html_link_arr->[$i]->{path}){
+                my $out_link = zip_archive ($html_link_arr->[$i]->{path});
+                if ( (-f $out_link) && ($handle_service) )  {
+                    $shock_out = curl_upload_shock ($out_link, $shock);
                     $handle_return = create_handle($shock, $shock_out, $handle_service);
                 }
                 my $url = generate_shock_url($handle_return);
@@ -514,6 +556,7 @@ sub create_extended_report
                     name =>  $html_link_arr->[$i]->{name},
                     URL => $url
                 };
+                print "$url\n";
             }
             else{
                 print "Error!! cannot access html file at $html_link_arr->[$i]->{path}\n";
@@ -539,6 +582,7 @@ sub create_extended_report
                 'type'=>'KBaseReport.Report',
                 'data'=>$report,
                 'name'=>$params->{report_object_name},
+                'hidden' => 0,
                 'provenance'=>$provenance
             }]
         });
