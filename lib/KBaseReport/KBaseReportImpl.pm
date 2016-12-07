@@ -582,7 +582,7 @@ sub create_extended_report
                 'type'=>'KBaseReport.Report',
                 'data'=>$report,
                 'name'=>$params->{report_object_name},
-                'hidden' => 0,
+                'hidden' => 1,
                 'provenance'=>$provenance
             }]
         });
