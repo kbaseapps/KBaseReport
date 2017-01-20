@@ -17,7 +17,7 @@ RUN apt-get -y install nano
 
 COPY ./ /kb/module
 RUN mkdir -p /kb/module/work
-RUN chmod 777 /kb/module
+RUN chmod -R 777 /kb/module
 
 WORKDIR /kb/module
 
