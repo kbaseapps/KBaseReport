@@ -117,6 +117,8 @@ module KBaseReport {
         list <fileRef> file_links - a list of paths or shock node IDs pointing to a single flat file
         The following parameters indicate where the report object should be saved in the workspace:
         string report_object_name - name to use for the report object (job ID is used if left unspecified)
+        html_window_height - height of the html window in the narrative output widget
+        summary_window_height - height of summary window in the narrative output widget
         string workspace_name - name of workspace where object should be saved
     */
     typedef structure {
@@ -128,6 +130,8 @@ module KBaseReport {
         int  direct_html_link_index;
         list <File> file_links;
         string report_object_name;
+        float html_window_height;
+        float summary_window_height;
         string workspace_name;
     } CreateExtendedReportParams;
     /*

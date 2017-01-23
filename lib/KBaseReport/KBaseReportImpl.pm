@@ -472,10 +472,31 @@ sub create_extended_report
     my $token=$ctx->token;
     my $provenance=$ctx->provenance;
     my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
-    my $file_link_arr = $params->{file_links};
-    my $html_link_arr = $params->{html_links};
 
-	my $shock = { url => $self->{'shock-url'}, token => $token };
+    my $file_link_arr = [];
+    my $html_link_arr = [];
+    my $objects_created = [];
+
+    if (defined $params->{file_links}){
+        $file_link_arr = $params->{file_links};
+    }
+
+    if (defined $params->{html_links}){
+        $html_link_arr = $params->{html_links};
+    }
+
+    if (defined $params->{objects_created}){
+
+        $objects_created = $params->{objects_created}
+    }
+
+    my $report = {
+        file_links => [],
+        html_links => [],
+        objects_created => []
+    };
+
+  	my $shock = { url => $self->{'shock-url'}, token => $token };
     my $handle_service = Bio::KBase::HandleService->new($self->{'handle-service-url'});
     my @file_arr;
     my @html_arr;
@@ -566,14 +587,18 @@ sub create_extended_report
         push (@html_arr, $LinkedFile);
     }
 
-    my $report = {
+    $report = {
         text_message => $params->{message},
         file_links => \@file_arr,
         html_links => \@html_arr,
         direct_html => $html_string,
-        objects_created => $params->{objects_created}
+        direct_html_link_index => $params->{direct_html_link_index},
+        objects_created => $objects_created,
+        html_window_height => $params->{html_window_height},
+        summary_window_height => $params->{summary_window_height}
     };
 
+    #print &Dumper ($report);
 	my $obj_info_list = undef;
     eval {
         $obj_info_list = $wsClient->save_objects({
@@ -582,22 +607,23 @@ sub create_extended_report
                 'type'=>'KBaseReport.Report',
                 'data'=>$report,
                 'name'=>$params->{report_object_name},
-                'hidden' => 0,
+                'hidden' => 1,
                 'provenance'=>$provenance
             }]
         });
     };
     if ($@) {
-        die "Error saving modified genome object to workspace:\n".$@;
+        die "Error saving reproter object to workspace:\n".$@;
     }
-    print &Dumper ($obj_info_list);
+    #print &Dumper ($provenance);
+
     my $wsRef = $obj_info_list->[0]->[6]."/".$obj_info_list->[0]->[0]."/".$obj_info_list->[0]->[4];
     $info = {
     	ref => $wsRef,
     	name => $params->{report_object_name}
 
     };
-
+    #print &Dumper ($info);
     return $info;
     #END create_extended_report
     my @_bad_returns;
