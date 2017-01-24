@@ -33,6 +33,7 @@ module KBaseReport {
         handle_ref handle;
         string description;
         string name;
+        string label;
         string URL;
     } LinkedFile;
 

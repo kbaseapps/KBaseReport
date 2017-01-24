@@ -558,6 +558,7 @@ sub create_extended_report
                 handle => $handle_return->{hid},
                 description => $html_link_arr->[$i]->{description},
                 name => $html_link_arr->[$i]->{name},
+                label => $html_link_arr->[$i]->{label},
                 URL => $url
             };
         }
@@ -575,6 +576,7 @@ sub create_extended_report
                     handle => $handle_return->{hid},
                     description => $html_link_arr->[$i]->{description},
                     name =>  $out_link->{folderName},
+                    label => $html_link_arr->[$i]->{label},
                     URL => $url
                 };
                 print "$url\n";
