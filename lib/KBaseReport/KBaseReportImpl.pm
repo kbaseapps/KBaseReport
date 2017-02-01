@@ -518,6 +518,7 @@ sub create_extended_report
                 handle => $handle_return->{hid},
                 description => $file_link_arr->[$i]->{description},
                 name => $file_link_arr->[$i]->{name},
+		label => $file_link_arr->[$i]->{label},
                 URL => $url
             };
         }
@@ -533,6 +534,7 @@ sub create_extended_report
                     handle => $handle_return->{hid},
                     description => $file_link_arr->[$i]->{description},
                     name => $file_link_arr->[$i]->{name},
+		    label => $file_link_arr->[$i]->{label},
                     URL => $url
                 };
             }
