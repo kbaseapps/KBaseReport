@@ -26,7 +26,7 @@ module KBaseReport {
 
     /*
         Represents a file or html archive that the report should like to
-        @optional description
+        @optional description label
     */
 
     typedef structure {
