@@ -141,6 +141,7 @@ LinkedFile is a reference to a hash where the following keys are defined:
 	handle has a value which is a KBaseReport.handle_ref
 	description has a value which is a string
 	name has a value which is a string
+	label has a value which is a string
 	URL has a value which is a string
 handle_ref is a string
 ReportInfo is a reference to a hash where the following keys are defined:
@@ -174,6 +175,7 @@ LinkedFile is a reference to a hash where the following keys are defined:
 	handle has a value which is a KBaseReport.handle_ref
 	description has a value which is a string
 	name has a value which is a string
+	label has a value which is a string
 	URL has a value which is a string
 handle_ref is a string
 ReportInfo is a reference to a hash where the following keys are defined:
@@ -261,6 +263,8 @@ CreateExtendedReportParams is a reference to a hash where the following keys are
 	direct_html_link_index has a value which is an int
 	file_links has a value which is a reference to a list where each element is a KBaseReport.File
 	report_object_name has a value which is a string
+	html_window_height has a value which is a float
+	summary_window_height has a value which is a float
 	workspace_name has a value which is a string
 WorkspaceObject is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
@@ -292,6 +296,8 @@ CreateExtendedReportParams is a reference to a hash where the following keys are
 	direct_html_link_index has a value which is an int
 	file_links has a value which is a reference to a list where each element is a KBaseReport.File
 	report_object_name has a value which is a string
+	html_window_height has a value which is a float
+	summary_window_height has a value which is a float
 	workspace_name has a value which is a string
 WorkspaceObject is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
@@ -563,7 +569,7 @@ description has a value which is a string
 =item Description
 
 Represents a file or html archive that the report should like to
-@optional description
+@optional description label
 
 
 =item Definition
@@ -575,6 +581,7 @@ a reference to a hash where the following keys are defined:
 handle has a value which is a KBaseReport.handle_ref
 description has a value which is a string
 name has a value which is a string
+label has a value which is a string
 URL has a value which is a string
 
 </pre>
@@ -587,6 +594,7 @@ a reference to a hash where the following keys are defined:
 handle has a value which is a KBaseReport.handle_ref
 description has a value which is a string
 name has a value which is a string
+label has a value which is a string
 URL has a value which is a string
 
 
@@ -796,6 +804,8 @@ The following argument allows the user to specify the location of files that the
 list <fileRef> file_links - a list of paths or shock node IDs pointing to a single flat file
 The following parameters indicate where the report object should be saved in the workspace:
 string report_object_name - name to use for the report object (job ID is used if left unspecified)
+html_window_height - height of the html window in the narrative output widget
+summary_window_height - height of summary window in the narrative output widget
 string workspace_name - name of workspace where object should be saved
 
 
@@ -813,6 +823,8 @@ direct_html has a value which is a string
 direct_html_link_index has a value which is an int
 file_links has a value which is a reference to a list where each element is a KBaseReport.File
 report_object_name has a value which is a string
+html_window_height has a value which is a float
+summary_window_height has a value which is a float
 workspace_name has a value which is a string
 
 </pre>
@@ -830,6 +842,8 @@ direct_html has a value which is a string
 direct_html_link_index has a value which is an int
 file_links has a value which is a reference to a list where each element is a KBaseReport.File
 report_object_name has a value which is a string
+html_window_height has a value which is a float
+summary_window_height has a value which is a float
 workspace_name has a value which is a string
 
 
