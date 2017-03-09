@@ -19,7 +19,7 @@ Module for a simple WS data object report type.
 
 #BEGIN_HEADER
 use Bio::KBase::AuthToken;
-use Bio::KBase::workspace::Client;
+use Workspace::WorkspaceClient;
 use Bio::KBase::HandleService;
 use Config::IniFiles;
 use JSON;
@@ -315,7 +315,7 @@ sub create
     #BEGIN create
     my $token=$ctx->token;
     my $provenance=$ctx->provenance;
-    my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
+    my $wsClient=Workspace::WorkspaceClient->new($self->{'workspace-url'},token=>$token);
 
     print "Creating KBase Report\n";
 
@@ -477,7 +477,7 @@ sub create_extended_report
     my $workspace_name = $params->{workspace_name};
     my $token=$ctx->token;
     my $provenance=$ctx->provenance;
-    my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
+    my $wsClient=Workspace::WorkspaceClient->new($self->{'workspace-url'},token=>$token);
 
     my $file_link_arr = [];
     my $html_link_arr = [];
