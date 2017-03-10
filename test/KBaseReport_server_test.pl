@@ -15,6 +15,8 @@ my $ws_url = $config->{"workspace-url"};
 my $ws_name = undef;
 my $ws_client = Workspace::WorkspaceClient->new($ws_url,token => $token);
 my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1, auth_svc=>$config->{'auth-service-url'});
+print("ws url:".$config->{'workspace-url'} . "\n");
+print("auth url:".$config->{'auth-service-url'} . "\n");
 my $ctx = LocalCallContext->new($token, $auth_token->user_id);
 $KBaseReport::KBaseReportServer::CallContext = $ctx;
 my $impl = new KBaseReport::KBaseReportImpl();
@@ -92,6 +94,7 @@ eval {
    my $ws_name = get_ws_name();
    $createReport->{workspace_name} = $ws_name;
    my $ret =$impl->create_extended_report($createReport);
+   print Dumper($ret);
    #my $ret =$impl->create($mikes_report_param);
 
 
