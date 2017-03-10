@@ -4,7 +4,7 @@ use Test::More;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
-use Bio::KBase::workspace::Client;
+use Workspace::WorkspaceClient;
 use KBaseReport::KBaseReportImpl;
 
 local $| = 1;
@@ -13,8 +13,10 @@ my $config_file = $ENV{'KB_DEPLOYMENT_CONFIG'};
 my $config = new Config::Simple($config_file)->get_block('KBaseReport');
 my $ws_url = $config->{"workspace-url"};
 my $ws_name = undef;
-my $ws_client = new Bio::KBase::workspace::Client($ws_url,token => $token);
-my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
+my $ws_client = Workspace::WorkspaceClient->new($ws_url,token => $token);
+my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1, auth_svc=>$config->{'auth-service-url'});
+print("ws url:".$config->{'workspace-url'} . "\n");
+print("auth url:".$config->{'auth-service-url'} . "\n");
 my $ctx = LocalCallContext->new($token, $auth_token->user_id);
 $KBaseReport::KBaseReportServer::CallContext = $ctx;
 my $impl = new KBaseReport::KBaseReportImpl();
@@ -63,7 +65,7 @@ my $createReport = {
     file_links => [$file1, $file2],
     html_links => [$htmlfile1,$htmlfile2],
     direct_html => $html_string,
-    objects_created => [$list_ob],
+    #objects_created => [$list_ob],
     message => "testReporterObject"
 };
 
@@ -78,8 +80,21 @@ my $mikes_report_param = {
     report => $mikes_report_hash
 };
 
+sub get_ws_name {
+    if (!defined($ws_name)) {
+        my $suffix = int(time * 1000);
+        $ws_name = 'test_KBaseReport_' . $suffix;
+        $ws_name = 'test_KBaseReport_' . $suffix;
+        $ws_client->create_workspace({workspace => $ws_name});
+    }
+    return $ws_name;
+}
+
 eval {
+   my $ws_name = get_ws_name();
+   $createReport->{workspace_name} = $ws_name;
    my $ret =$impl->create_extended_report($createReport);
+   print Dumper($ret);
    #my $ret =$impl->create($mikes_report_param);
 
 

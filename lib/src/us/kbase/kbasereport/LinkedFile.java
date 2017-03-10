@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: LinkedFile</p>
  * <pre>
  * Represents a file or html archive that the report should like to
- * @optional description
+ * @optional description label
  * </pre>
  * 
  */
@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "handle",
     "description",
     "name",
+    "label",
     "URL"
 })
 public class LinkedFile {
@@ -35,6 +36,8 @@ public class LinkedFile {
     private String description;
     @JsonProperty("name")
     private String name;
+    @JsonProperty("label")
+    private String label;
     @JsonProperty("URL")
     private String URL;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
@@ -84,6 +87,21 @@ public class LinkedFile {
         return this;
     }
 
+    @JsonProperty("label")
+    public String getLabel() {
+        return label;
+    }
+
+    @JsonProperty("label")
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public LinkedFile withLabel(String label) {
+        this.label = label;
+        return this;
+    }
+
     @JsonProperty("URL")
     public String getURL() {
         return URL;
@@ -111,7 +129,7 @@ public class LinkedFile {
 
     @Override
     public String toString() {
-        return ((((((((((("LinkedFile"+" [handle=")+ handle)+", description=")+ description)+", name=")+ name)+", URL=")+ URL)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((("LinkedFile"+" [handle=")+ handle)+", description=")+ description)+", name=")+ name)+", label=")+ label)+", URL=")+ URL)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
