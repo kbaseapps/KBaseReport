@@ -132,6 +132,9 @@ sub zip_archive {
     elsif (-f $path){
         print "processing html file at $path\n";
         my $tmpDir = "/kb/module/work/tmp/SingleZippedHtml";
+        if ( -e $tmpDir ) {
+            rmtree($tmpDir, 1, 1);
+        }
         mkpath([$tmpDir], 1);
         copy $path, $tmpDir;
         $zip->addTree($tmpDir);
