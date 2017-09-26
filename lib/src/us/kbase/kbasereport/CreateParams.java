@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 /**
  * <p>Original spec-file type: CreateParams</p>
  * <pre>
- * Provide the report information.  The structure is:
+ * Provide the report information. Either workspace name or workspace id is required  The structure is:
  *     params = {
  *         report: {
  *             text_message: '',
@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  *             }]
  *         },
  *         workspace_name: 'ws'
+ *         workspace_id: id
  *     }
  * </pre>
  * 
@@ -33,7 +34,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
     "report",
-    "workspace_name"
+    "workspace_name",
+    "workspace_id"
 })
 public class CreateParams {
 
@@ -54,6 +56,8 @@ public class CreateParams {
     private Report report;
     @JsonProperty("workspace_name")
     private String workspaceName;
+    @JsonProperty("workspace_id")
+    private Long workspaceId;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
@@ -112,6 +116,21 @@ public class CreateParams {
         return this;
     }
 
+    @JsonProperty("workspace_id")
+    public Long getWorkspaceId() {
+        return workspaceId;
+    }
+
+    @JsonProperty("workspace_id")
+    public void setWorkspaceId(Long workspaceId) {
+        this.workspaceId = workspaceId;
+    }
+
+    public CreateParams withWorkspaceId(Long workspaceId) {
+        this.workspaceId = workspaceId;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -124,7 +143,7 @@ public class CreateParams {
 
     @Override
     public String toString() {
-        return ((((((("CreateParams"+" [report=")+ report)+", workspaceName=")+ workspaceName)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((("CreateParams"+" [report=")+ report)+", workspaceName=")+ workspaceName)+", workspaceId=")+ workspaceId)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

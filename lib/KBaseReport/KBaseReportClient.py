@@ -37,9 +37,10 @@ class KBaseReport(object):
         """
         Create a KBaseReport with a brief summary of an App run.
         :param params: instance of type "CreateParams" (Provide the report
-           information.  The structure is: params = { report: { text_message:
-           '', warnings: ['w1'], objects_created: [ { ref: 'ws/objid',
-           description: '' }] }, workspace_name: 'ws' }) -> structure:
+           information. Either workspace name or workspace id is required 
+           The structure is: params = { report: { text_message: '', warnings:
+           ['w1'], objects_created: [ { ref: 'ws/objid', description: '' }]
+           }, workspace_name: 'ws' workspace_id: id }) -> structure:
            parameter "report" of type "Report" (A simple Report of a method
            run in KBase. It only provides for now a way to display a fixed
            width text output summary message, a list of warnings, and a list
@@ -66,7 +67,7 @@ class KBaseReport(object):
            String, parameter "name" of String, parameter "label" of String,
            parameter "URL" of String, parameter "direct_html" of String,
            parameter "direct_html_link_index" of Long, parameter
-           "workspace_name" of String
+           "workspace_name" of String, parameter "workspace_id" of Long
         :returns: instance of type "ReportInfo" (The reference to the saved
            KBaseReport.  The structure is: reportInfo = { ref:
            'ws/objid/ver', name: 'myreport.2262323452' }) -> structure:
@@ -105,24 +106,25 @@ class KBaseReport(object):
            for the report object (job ID is used if left unspecified)
            html_window_height - height of the html window in the narrative
            output widget summary_window_height - height of summary window in
-           the narrative output widget string workspace_name - name of
-           workspace where object should be saved) -> structure: parameter
-           "message" of String, parameter "objects_created" of list of type
-           "WorkspaceObject" (Represents a Workspace object with some brief
-           description text that can be associated with the object. @optional
-           description) -> structure: parameter "ref" of type "ws_id" (@id
-           ws), parameter "description" of String, parameter "warnings" of
-           list of String, parameter "html_links" of list of type "File" ->
-           structure: parameter "path" of String, parameter "shock_id" of
-           String, parameter "name" of String, parameter "description" of
-           String, parameter "direct_html" of String, parameter
-           "direct_html_link_index" of Long, parameter "file_links" of list
-           of type "File" -> structure: parameter "path" of String, parameter
-           "shock_id" of String, parameter "name" of String, parameter
-           "description" of String, parameter "report_object_name" of String,
-           parameter "html_window_height" of Double, parameter
-           "summary_window_height" of Double, parameter "workspace_name" of
-           String
+           the narrative output widget One of the following: string
+           workspace_name - name of workspace where object should be saved
+           int workspace_id - id of workspace where object should be saved)
+           -> structure: parameter "message" of String, parameter
+           "objects_created" of list of type "WorkspaceObject" (Represents a
+           Workspace object with some brief description text that can be
+           associated with the object. @optional description) -> structure:
+           parameter "ref" of type "ws_id" (@id ws), parameter "description"
+           of String, parameter "warnings" of list of String, parameter
+           "html_links" of list of type "File" -> structure: parameter "path"
+           of String, parameter "shock_id" of String, parameter "name" of
+           String, parameter "description" of String, parameter "direct_html"
+           of String, parameter "direct_html_link_index" of Long, parameter
+           "file_links" of list of type "File" -> structure: parameter "path"
+           of String, parameter "shock_id" of String, parameter "name" of
+           String, parameter "description" of String, parameter
+           "report_object_name" of String, parameter "html_window_height" of
+           Double, parameter "summary_window_height" of Double, parameter
+           "workspace_name" of String, parameter "workspace_id" of Long
         :returns: instance of type "ReportInfo" (The reference to the saved
            KBaseReport.  The structure is: reportInfo = { ref:
            'ws/objid/ver', name: 'myreport.2262323452' }) -> structure:
