@@ -1,6 +1,7 @@
 use strict;
 use Data::Dumper;
 use Test::More;
+use Test::Exception;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
@@ -53,8 +54,8 @@ my $htmlfile2 = {
 };
 
 my $list_ob = {
-    ref => '7995/29/72',
-    description => 'sample_reads_object'
+    ref => '7601/48/57',
+    description => 'sample_fba_model'
 
 };
 
@@ -65,7 +66,7 @@ my $createReport = {
     file_links => [$file1, $file2],
     html_links => [$htmlfile1,$htmlfile2],
     direct_html => $html_string,
-    #objects_created => [$list_ob],
+    objects_created => [$list_ob],
     message => "testReporterObject"
 };
 
@@ -90,70 +91,37 @@ sub get_ws_name {
     return $ws_name;
 }
 
-eval {
-   my $ws_name = get_ws_name();
-   $createReport->{workspace_name} = $ws_name;
+lives_ok {
+   $createReport->{workspace_name} = get_ws_name();
    my $ret =$impl->create_extended_report($createReport);
    print Dumper($ret);
-   #my $ret =$impl->create($mikes_report_param);
-
-
 };
 
-
-
-=head
-sub get_ws_name {
-    if (!defined($ws_name)) {
-        my $suffix = int(time * 1000);
-        $ws_name = 'test_KBaseReport_' . $suffix;
-        $ws_name = 'test_KBaseReport_' . $suffix;
-        $ws_client->create_workspace({workspace => $ws_name});
-    }
-    return $ws_name;
-}
-eval {
-    my $ret;
-    eval {
-        $ret = $impl->create({
-                report => {
-                    objects_created => [],
-                    text_message => "Some report"
-                },
-                workspace_name => self->get_ws_name()
-        });
-    };
-    ok(!$@,"create command successful");
-    eval {
-        $ret = $impl->create_report({
-                report => {
-                    objects_created => [],
-                    text_message => "Some report"
-                },
-                workspace_name => self->get_ws_name()
-        });
-    };
-    ok(!$@,"create_report command successful");
-    done_testing(2);
+lives_ok {
+   $mikes_report_param->{workspace_name} = get_ws_name();
+   my $ret =$impl->create($mikes_report_param);
+   print Dumper($ret);
 };
-=cut
-my $err = undef;
-if ($@) {
-    $err = $@;
-}
+
+lives_ok {
+   $createReport->{workspace_id} = 7601;
+   my $ret =$impl->create_extended_report($createReport);
+   print Dumper($ret);
+};
+
+lives_ok {
+   $mikes_report_param->{workspace_id} = 7601;
+   my $ret =$impl->create($mikes_report_param);
+   print Dumper($ret);
+};
+done_testing(4);
+
 eval {
     if (defined($ws_name)) {
         $ws_client->delete_workspace({workspace => $ws_name});
         print("Test workspace was deleted\n");
     }
 };
-if (defined($err)) {
-    if(ref($err) eq "Bio::KBase::Exceptions::KBaseException") {
-        die("Error while running tests: " . $err->trace->as_string);
-    } else {
-        die $err;
-    }
-}
 
 {
     package LocalCallContext;
