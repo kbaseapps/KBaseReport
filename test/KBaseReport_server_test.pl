@@ -14,6 +14,7 @@ my $config_file = $ENV{'KB_DEPLOYMENT_CONFIG'};
 my $config = new Config::Simple($config_file)->get_block('KBaseReport');
 my $ws_url = $config->{"workspace-url"};
 my $ws_name = undef;
+my $ws_info = undef;
 my $ws_client = Workspace::WorkspaceClient->new($ws_url,token => $token);
 my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1, auth_svc=>$config->{'auth-service-url'});
 print("ws url:".$config->{'workspace-url'} . "\n");
@@ -81,36 +82,36 @@ my $mikes_report_param = {
     report => $mikes_report_hash
 };
 
-sub get_ws_name {
+sub get_ws {
     if (!defined($ws_name)) {
         my $suffix = int(time * 1000);
         $ws_name = 'test_KBaseReport_' . $suffix;
         $ws_name = 'test_KBaseReport_' . $suffix;
-        $ws_client->create_workspace({workspace => $ws_name});
+        $ws_info = $ws_client->create_workspace({workspace => $ws_name});
     }
-    return $ws_name;
+    return [$ws_name, $ws_info->[0]];
 }
 
 lives_ok {
-   $createReport->{workspace_name} = get_ws_name();
+   $createReport->{workspace_name} = get_ws()->[0];
    my $ret =$impl->create_extended_report($createReport);
    print Dumper($ret);
 };
 
 lives_ok {
-   $mikes_report_param->{workspace_name} = get_ws_name();
+   $mikes_report_param->{workspace_name} = get_ws()->[0];
    my $ret =$impl->create($mikes_report_param);
    print Dumper($ret);
 };
 
 lives_ok {
-   $createReport->{workspace_id} = 7601;
+   $createReport->{workspace_id} = get_ws()->[1];
    my $ret =$impl->create_extended_report($createReport);
    print Dumper($ret);
 };
 
 lives_ok {
-   $mikes_report_param->{workspace_id} = 7601;
+   $mikes_report_param->{workspace_id} = get_ws()->[1];
    my $ret =$impl->create($mikes_report_param);
    print Dumper($ret);
 };
