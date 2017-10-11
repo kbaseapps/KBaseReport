@@ -58,7 +58,7 @@ module KBaseReport {
     } Report;
 
     /*
-        Provide the report information.  The structure is:
+        Provide the report information. Either workspace name or workspace id is required  The structure is:
             params = {
                 report: {
                     text_message: '',
@@ -69,6 +69,7 @@ module KBaseReport {
                     }]
                 },
                 workspace_name: 'ws'
+                workspace_id: id
             }
     */
 
@@ -76,6 +77,7 @@ module KBaseReport {
     typedef structure {
         Report report;
         string workspace_name;
+        int workspace_id;
     } CreateParams;
 
     /*
@@ -120,7 +122,9 @@ module KBaseReport {
         string report_object_name - name to use for the report object (job ID is used if left unspecified)
         html_window_height - height of the html window in the narrative output widget
         summary_window_height - height of summary window in the narrative output widget
+        One of the following:
         string workspace_name - name of workspace where object should be saved
+        int workspace_id - id of workspace where object should be saved
     */
     typedef structure {
         string message;
@@ -134,6 +138,7 @@ module KBaseReport {
         float html_window_height;
         float summary_window_height;
         string workspace_name;
+        int workspace_id;
     } CreateExtendedReportParams;
     /*
         A more complex function to create a report that enables the user to specify files and html view that the report should link to

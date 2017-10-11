@@ -31,7 +31,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * string report_object_name - name to use for the report object (job ID is used if left unspecified)
  * html_window_height - height of the html window in the narrative output widget
  * summary_window_height - height of summary window in the narrative output widget
+ * One of the following:
  * string workspace_name - name of workspace where object should be saved
+ * int workspace_id - id of workspace where object should be saved
  * </pre>
  * 
  */
@@ -48,7 +50,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "report_object_name",
     "html_window_height",
     "summary_window_height",
-    "workspace_name"
+    "workspace_name",
+    "workspace_id"
 })
 public class CreateExtendedReportParams {
 
@@ -74,6 +77,8 @@ public class CreateExtendedReportParams {
     private Double summaryWindowHeight;
     @JsonProperty("workspace_name")
     private java.lang.String workspaceName;
+    @JsonProperty("workspace_id")
+    private Long workspaceId;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("message")
@@ -241,6 +246,21 @@ public class CreateExtendedReportParams {
         return this;
     }
 
+    @JsonProperty("workspace_id")
+    public Long getWorkspaceId() {
+        return workspaceId;
+    }
+
+    @JsonProperty("workspace_id")
+    public void setWorkspaceId(Long workspaceId) {
+        this.workspaceId = workspaceId;
+    }
+
+    public CreateExtendedReportParams withWorkspaceId(Long workspaceId) {
+        this.workspaceId = workspaceId;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -253,7 +273,7 @@ public class CreateExtendedReportParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((("CreateExtendedReportParams"+" [message=")+ message)+", objectsCreated=")+ objectsCreated)+", warnings=")+ warnings)+", htmlLinks=")+ htmlLinks)+", directHtml=")+ directHtml)+", directHtmlLinkIndex=")+ directHtmlLinkIndex)+", fileLinks=")+ fileLinks)+", reportObjectName=")+ reportObjectName)+", htmlWindowHeight=")+ htmlWindowHeight)+", summaryWindowHeight=")+ summaryWindowHeight)+", workspaceName=")+ workspaceName)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((("CreateExtendedReportParams"+" [message=")+ message)+", objectsCreated=")+ objectsCreated)+", warnings=")+ warnings)+", htmlLinks=")+ htmlLinks)+", directHtml=")+ directHtml)+", directHtmlLinkIndex=")+ directHtmlLinkIndex)+", fileLinks=")+ fileLinks)+", reportObjectName=")+ reportObjectName)+", htmlWindowHeight=")+ htmlWindowHeight)+", summaryWindowHeight=")+ summaryWindowHeight)+", workspaceName=")+ workspaceName)+", workspaceId=")+ workspaceId)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

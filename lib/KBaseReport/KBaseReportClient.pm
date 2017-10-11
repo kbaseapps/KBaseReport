@@ -124,6 +124,7 @@ $info is a KBaseReport.ReportInfo
 CreateParams is a reference to a hash where the following keys are defined:
 	report has a value which is a KBaseReport.Report
 	workspace_name has a value which is a string
+	workspace_id has a value which is an int
 Report is a reference to a hash where the following keys are defined:
 	text_message has a value which is a string
 	warnings has a value which is a reference to a list where each element is a string
@@ -158,6 +159,7 @@ $info is a KBaseReport.ReportInfo
 CreateParams is a reference to a hash where the following keys are defined:
 	report has a value which is a KBaseReport.Report
 	workspace_name has a value which is a string
+	workspace_id has a value which is an int
 Report is a reference to a hash where the following keys are defined:
 	text_message has a value which is a string
 	warnings has a value which is a reference to a list where each element is a string
@@ -265,6 +267,7 @@ CreateExtendedReportParams is a reference to a hash where the following keys are
 	html_window_height has a value which is a float
 	summary_window_height has a value which is a float
 	workspace_name has a value which is a string
+	workspace_id has a value which is an int
 WorkspaceObject is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
 	description has a value which is a string
@@ -298,6 +301,7 @@ CreateExtendedReportParams is a reference to a hash where the following keys are
 	html_window_height has a value which is a float
 	summary_window_height has a value which is a float
 	workspace_name has a value which is a string
+	workspace_id has a value which is an int
 WorkspaceObject is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
 	description has a value which is a string
@@ -664,7 +668,7 @@ direct_html_link_index has a value which is an int
 
 =item Description
 
-Provide the report information.  The structure is:
+Provide the report information. Either workspace name or workspace id is required  The structure is:
     params = {
         report: {
             text_message: '',
@@ -675,6 +679,7 @@ Provide the report information.  The structure is:
             }]
         },
         workspace_name: 'ws'
+        workspace_id: id
     }
 
 
@@ -686,6 +691,7 @@ Provide the report information.  The structure is:
 a reference to a hash where the following keys are defined:
 report has a value which is a KBaseReport.Report
 workspace_name has a value which is a string
+workspace_id has a value which is an int
 
 </pre>
 
@@ -696,6 +702,7 @@ workspace_name has a value which is a string
 a reference to a hash where the following keys are defined:
 report has a value which is a KBaseReport.Report
 workspace_name has a value which is a string
+workspace_id has a value which is an int
 
 
 =end text
@@ -805,7 +812,9 @@ The following parameters indicate where the report object should be saved in the
 string report_object_name - name to use for the report object (job ID is used if left unspecified)
 html_window_height - height of the html window in the narrative output widget
 summary_window_height - height of summary window in the narrative output widget
+One of the following:
 string workspace_name - name of workspace where object should be saved
+int workspace_id - id of workspace where object should be saved
 
 
 =item Definition
@@ -825,6 +834,7 @@ report_object_name has a value which is a string
 html_window_height has a value which is a float
 summary_window_height has a value which is a float
 workspace_name has a value which is a string
+workspace_id has a value which is an int
 
 </pre>
 
@@ -844,6 +854,7 @@ report_object_name has a value which is a string
 html_window_height has a value which is a float
 summary_window_height has a value which is a float
 workspace_name has a value which is a string
+workspace_id has a value which is an int
 
 
 =end text
