@@ -1,0 +1,16 @@
+{
+    "name" : "Create Extended Report",
+    "short_description" : "Creates a report with app results and saves this report to the workspace",
+    "long_description" : "This allows for detailed communication of app results with the user by linking to objects created, displaying warnings and messages, directly rendering html in the narrative and/or providing links to directly download generated files.",
+    "tags" : {
+        "categories" : ["util"],
+        "input": {
+            "file_types": [],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": []
+        }
+    }
+}
