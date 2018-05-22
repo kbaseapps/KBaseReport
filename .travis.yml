@@ -1,0 +1,29 @@
+language: python
+python: ['2.7']
+sudo: required
+services: [docker]
+
+install:
+  - docker pull kbase/kb-sdk
+  - docker run kbase/kb-sdk genscript > $HOME/bin/kb-sdk
+  - chmod 755 $HOME/bin/kb-sdk
+  - export PATH=$PATH:$HOME/bin/kb-sdk
+  - kb-sdk sdkbase
+  - kb-sdk test || true
+  - make build-test-script
+  - sed -i "s/test_token=/test_token=$TEST_TOKEN/" test_local/test.cfg
+  - sed -i 's/$(id -u)/0:0/' test_local/run_tests.sh
+
+script:
+  - kb-sdk test
+
+after_success:
+  - cp test_local/workdir/.coverage .
+  - sudo mkdir -p /kb/module/lib/
+  - sudo cp -R test_local/workdir/kb/module/lib/kb_deseq /kb/module/lib
+  - coverage report -m
+  - coveralls
+
+env:
+  global:
+    secure: LYbfSjXXh6i0QxQrlMuR1SzWs/HZux5RMua9kbpB2bpf5rq7a5c/Ztgzm3bEktT7tUEy4Xj3EI5wXivyAyNK8M68xZi3CotuS0cByB/i8s5Y8RT+UaGqOpd9ViwDMXjfrUGH+aFfmWUvhb/P+rmt4/XhUuF1iNnQTfARDJHmwbGyRX7fmzlN0OrajDnaSDa3u1kE6wd6Re5u3HEkkRjp7haiRTG0clsXPs+Ybjc1Da0VDOPw6Ksm7b6RXwrEuxKlVPXwXYROOEYyrO71ZYIc7o7xWZDx507ShqeX4TGNHwPzO00Ko1luG5Qzvc8+7iWA4dKXusX1UXMlzd7qiSBCltG9egdDZhE0U4hqu5m5fpfXUgHG0K1G17d2ds8YuweCxFgTRkrLK7D+tGJ76YCCsB0pBkh8f5VbKlcCMfqYR7VnkWCHQsLVUVmgQRVFhSWp3QGkknkjQ9DW56GlzeLQlzsB1+vtdkzeE00d37dTnLtuwT2FQSsdCGUWmO/nbkTk1DY+cqIGaX8+VbLD3fYU1Fx935Hk/04kUZhSRKnk3hxOjYnyRbTWy45ZsYXyrWEFrMY4JFwG6/nY0g9j3813r/+V97jSnd+1ImZX8BG+uTWRpJjVxB+bvW+umP3sTCZzrwduaKJzq8C3vuLchNheZ2WcZY0slZpdvW3+UOhoXjY=
