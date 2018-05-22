@@ -1,0 +1,15 @@
+module-name:
+    KBaseReport
+
+module-description:
+    Generate output reports in KBase apps with attached HTML and files
+
+service-language:
+    python
+
+module-version:
+    3.0.0
+
+owners:
+    [jayrbolton]
+
