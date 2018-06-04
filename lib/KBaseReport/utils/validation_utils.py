@@ -149,9 +149,6 @@ def _format_errors(errors, params):
         err_str,
         "You parameters were:\n",
         pprint.pformat(params)
-        # "\n(View the type spec here: ",
-        # Can point to a KIDL type spec for user reference:
-        # "https://github.com/jayrbolton/KBaseReport/blob/master/KBaseReport.spec)\n",
     ])
 
 # Re-used validations

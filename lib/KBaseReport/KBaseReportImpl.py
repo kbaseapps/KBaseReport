@@ -23,7 +23,7 @@ class KBaseReport:
     # the latter method is running.
     ######################################### noqa
     VERSION = "3.0.0"
-    GIT_URL = "https://github.com/jayrbolton/KBaseReport"
+    GIT_URL = "https://github.com/kbaseapps/KBaseReport"
     GIT_COMMIT_HASH = "d0c86f0899825ab545b399c9cc56b0ca3e2df893"
 
     #BEGIN_CLASS_HEADER
