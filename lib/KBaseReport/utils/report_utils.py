@@ -52,7 +52,7 @@ def create_extended(params, dfu):
         'text_message': params.get('message'),
         'file_links': files,
         'html_links': html_files,
-        'warnings': params.get('warnings'),
+        'warnings': params.get('warnings', []),
         'direct_html': params.get('direct_html'),
         'direct_html_link_index': params.get('direct_html_link_index'),
         'objects_created': params.get('objects_created', []),
