@@ -3,6 +3,8 @@ import os
 import shutil
 from uuid import uuid4
 
+from validation_utils import validate_files
+
 """
 Utilities for fetching/uploading files
 We use an instance of DataFileUtil here
@@ -18,6 +20,7 @@ def fetch_or_upload_file_links(dfu, files):
     :return: list of file dictionaries that that can be uploaded to the workspace for the report
     """
     out_files = []
+    validate_files(files)  # Assures that every file has either a 'path' or 'shock_id'
     for each_file in files:
         if 'path' in each_file:
             # Only zip if the path is a directory
@@ -43,6 +46,7 @@ def fetch_or_upload_html_links(dfu, files):
     :return: list of file dictionaries that that can be uploaded to the workspace for the report
     """
     out_files = []
+    validate_files(files)  # Assures that every file has either a 'path' or 'shock_id'
     for each_file in files:
         if 'path' in each_file:
             # Having a 'path' key means we have to upload to shock

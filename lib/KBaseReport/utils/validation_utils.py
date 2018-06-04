@@ -69,13 +69,27 @@ def validate_extended_report_params(params):
         'direct_html_link_index': {'type': 'integer', 'min': 0},
         'direct_html': {'type': 'string'}
     })
-    _validate_files(params.get('html_links', []))
-    _validate_files(params.get('file_links', []))
     _validate_html_index(params.get('html_links', []), params.get('direct_html_link_index'))
     _require_workspace_id_or_name(params)
     if not validator.validate(params):
         raise TypeError(_format_errors(validator.errors, params))
     return params
+
+
+def validate_files(files):
+    """
+    Validate that every entry in `files` contains either a "shock_id" or "path"
+    Raise an exception if any `path` value in `files` does not exist on the disk
+    """
+    def file_or_dir(path):
+        return os.path.isfile(path) or os.path.isdir(path)
+    for f in files:
+        if ('path' not in f) and ('shock_id' not in f):
+            err = {'path': ['required without shock_id'], 'shock_id': ['required without path']}
+            raise TypeError(_format_errors(err, f))
+        if ('path' in f) and (not file_or_dir(f['path'])):
+            err = {'path': ['does not exist on filesystem']}
+            raise ValueError(_format_errors(err, f))
 
 
 def _require_workspace_id_or_name(params):
@@ -92,29 +106,21 @@ def _require_workspace_id_or_name(params):
     return params
 
 
-def _validate_files(files):
-    """
-    Validate that every entry in `files` contains either a "shock_id" or "path"
-    Raise an exception if any `path` value in `files` is non-existent
-    """
-    def _file_or_dir(path):
-        return os.path.isfile(path) or os.path.isdir(path)
-    for f in files:
-        if ('path' not in f) and ('shock_id' not in f):
-            err = {'path': ['required without shock_id'], 'shock_id': ['required without path']}
-            raise TypeError(_format_errors(err, f))
-        if ('path' in f) and (not _file_or_dir(f['path'])):
-            err = {'path': ['does not exist on filesystem']}
-            raise ValueError(_format_errors(err, f))
-
-
 def _validate_html_index(html_links, index):
     """
     Validate that the main file (html_link['name']) is present inside the html directory
     """
     if (index is None) or (not html_links):
         return
-    html_link = html_links[index]
+    try:
+        html_link = html_links[index]
+    except IndexError as err:
+        print("".join([
+            "direct_html_link_index is out of bounds for html_links. ",
+            "The index is " + str(index),
+            " while the length of html_links is " + str(len(html_links))
+        ]))
+        raise err
     if 'path' not in html_link:
         return
     # If they passed in a file, we don't need to validate

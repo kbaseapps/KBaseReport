@@ -301,3 +301,13 @@ class KBaseReportTest(unittest.TestCase):
             ]
         })
         self.check_extended_result(result, 'html_links', ['main.html'])
+
+    def test_html_direct_link_index_out_of_bounds(self):
+        """ Test the case where they pass an out of bounds html index """
+        params = {
+            'workspace_name': self.getWsName(),
+            'direct_html_link_index': 1,
+            'html_links': [{'name': 'index.html', 'path': self.a_html_path}]
+        }
+        with self.assertRaises(IndexError):
+            self.getImpl().create_extended_report(self.getContext(), params)

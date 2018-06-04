@@ -1,4 +1,4 @@
-# KBaseReport release notes
+KBaseReport Release Notes
 =========================================
 
 3.0.0

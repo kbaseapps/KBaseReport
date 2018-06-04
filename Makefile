@@ -1,7 +1,7 @@
-SERVICE = kbasereportpy
+SERVICE = kbasereport
 SERVICE_CAPS = KBaseReport
 SPEC_FILE = KBaseReport.spec
-URL = https://kbase.us/services/kbasereportpy
+URL = https://kbase.us/services/kbasereport
 DIR = $(shell pwd)
 LIB_DIR = lib
 SCRIPTS_DIR = scripts
@@ -22,6 +22,7 @@ compile:
 		--out $(LIB_DIR) \
 		--pysrvname $(SERVICE_CAPS).$(SERVICE_CAPS)Server \
 		--pyimplname $(SERVICE_CAPS).$(SERVICE_CAPS)Impl;
+	env KB_SDK_COMPILE_REPORT_FILE="" kb-sdk compile --html $(SPEC_FILE);
 
 build:
 	chmod +x $(SCRIPTS_DIR)/entrypoint.sh
