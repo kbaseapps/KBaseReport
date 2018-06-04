@@ -1,5 +1,5 @@
 
-package us.kbase.kbasereportpy;
+package us.kbase.kbasereport;
 
 import java.util.HashMap;
 import java.util.List;

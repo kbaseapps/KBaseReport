@@ -1,5 +1,5 @@
 
-package us.kbase.kbasereportpy;
+package us.kbase.kbasereport;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,9 +47,9 @@ public class Report {
     @JsonProperty("objects_created")
     private List<WorkspaceObject> objectsCreated;
     @JsonProperty("file_links")
-    private List<us.kbase.kbasereportpy.LinkedFile> fileLinks;
+    private List<us.kbase.kbasereport.LinkedFile> fileLinks;
     @JsonProperty("html_links")
-    private List<us.kbase.kbasereportpy.LinkedFile> htmlLinks;
+    private List<us.kbase.kbasereport.LinkedFile> htmlLinks;
     @JsonProperty("direct_html")
     private java.lang.String directHtml;
     @JsonProperty("direct_html_link_index")
@@ -102,31 +102,31 @@ public class Report {
     }
 
     @JsonProperty("file_links")
-    public List<us.kbase.kbasereportpy.LinkedFile> getFileLinks() {
+    public List<us.kbase.kbasereport.LinkedFile> getFileLinks() {
         return fileLinks;
     }
 
     @JsonProperty("file_links")
-    public void setFileLinks(List<us.kbase.kbasereportpy.LinkedFile> fileLinks) {
+    public void setFileLinks(List<us.kbase.kbasereport.LinkedFile> fileLinks) {
         this.fileLinks = fileLinks;
     }
 
-    public Report withFileLinks(List<us.kbase.kbasereportpy.LinkedFile> fileLinks) {
+    public Report withFileLinks(List<us.kbase.kbasereport.LinkedFile> fileLinks) {
         this.fileLinks = fileLinks;
         return this;
     }
 
     @JsonProperty("html_links")
-    public List<us.kbase.kbasereportpy.LinkedFile> getHtmlLinks() {
+    public List<us.kbase.kbasereport.LinkedFile> getHtmlLinks() {
         return htmlLinks;
     }
 
     @JsonProperty("html_links")
-    public void setHtmlLinks(List<us.kbase.kbasereportpy.LinkedFile> htmlLinks) {
+    public void setHtmlLinks(List<us.kbase.kbasereport.LinkedFile> htmlLinks) {
         this.htmlLinks = htmlLinks;
     }
 
-    public Report withHtmlLinks(List<us.kbase.kbasereportpy.LinkedFile> htmlLinks) {
+    public Report withHtmlLinks(List<us.kbase.kbasereport.LinkedFile> htmlLinks) {
         this.htmlLinks = htmlLinks;
         return this;
     }

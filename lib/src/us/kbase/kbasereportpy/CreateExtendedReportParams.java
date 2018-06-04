@@ -1,5 +1,5 @@
 
-package us.kbase.kbasereportpy;
+package us.kbase.kbasereport;
 
 import java.util.HashMap;
 import java.util.List;
@@ -72,13 +72,13 @@ public class CreateExtendedReportParams {
     @JsonProperty("warnings")
     private List<String> warnings;
     @JsonProperty("html_links")
-    private List<us.kbase.kbasereportpy.File> htmlLinks;
+    private List<us.kbase.kbasereport.File> htmlLinks;
     @JsonProperty("direct_html")
     private java.lang.String directHtml;
     @JsonProperty("direct_html_link_index")
     private Long directHtmlLinkIndex;
     @JsonProperty("file_links")
-    private List<us.kbase.kbasereportpy.File> fileLinks;
+    private List<us.kbase.kbasereport.File> fileLinks;
     @JsonProperty("report_object_name")
     private java.lang.String reportObjectName;
     @JsonProperty("html_window_height")
@@ -137,16 +137,16 @@ public class CreateExtendedReportParams {
     }
 
     @JsonProperty("html_links")
-    public List<us.kbase.kbasereportpy.File> getHtmlLinks() {
+    public List<us.kbase.kbasereport.File> getHtmlLinks() {
         return htmlLinks;
     }
 
     @JsonProperty("html_links")
-    public void setHtmlLinks(List<us.kbase.kbasereportpy.File> htmlLinks) {
+    public void setHtmlLinks(List<us.kbase.kbasereport.File> htmlLinks) {
         this.htmlLinks = htmlLinks;
     }
 
-    public CreateExtendedReportParams withHtmlLinks(List<us.kbase.kbasereportpy.File> htmlLinks) {
+    public CreateExtendedReportParams withHtmlLinks(List<us.kbase.kbasereport.File> htmlLinks) {
         this.htmlLinks = htmlLinks;
         return this;
     }
@@ -182,16 +182,16 @@ public class CreateExtendedReportParams {
     }
 
     @JsonProperty("file_links")
-    public List<us.kbase.kbasereportpy.File> getFileLinks() {
+    public List<us.kbase.kbasereport.File> getFileLinks() {
         return fileLinks;
     }
 
     @JsonProperty("file_links")
-    public void setFileLinks(List<us.kbase.kbasereportpy.File> fileLinks) {
+    public void setFileLinks(List<us.kbase.kbasereport.File> fileLinks) {
         this.fileLinks = fileLinks;
     }
 
-    public CreateExtendedReportParams withFileLinks(List<us.kbase.kbasereportpy.File> fileLinks) {
+    public CreateExtendedReportParams withFileLinks(List<us.kbase.kbasereport.File> fileLinks) {
         this.fileLinks = fileLinks;
         return this;
     }
