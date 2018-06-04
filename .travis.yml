@@ -1,27 +1,29 @@
-language: Python
-
+language: python
+python:
+- '2.7'
 sudo: required
-
 services:
-  - docker
-
-branches:
-  only:
-    - master
-
-before_install:
-    - docker version
-    - python --version
-
+- docker
 install:
-    - git clone https://github.com/kbase/jars
-    - git clone https://github.com/kbase/kb_sdk
-    - cd kb_sdk
-    - make
-    - make sdkbase
-    - docker images
-    - export PATH=$(pwd)/bin:$PATH
-    - cd ../
-
+- docker pull kbase/kb-sdk
+- docker run kbase/kb-sdk genscript > $HOME/bin/kb-sdk
+- chmod 755 $HOME/bin/kb-sdk
+- export PATH=$PATH:$HOME/bin/kb-sdk
+- kb-sdk sdkbase
+- kb-sdk test || true
+- make build-test-script
+- sed -i "s/test_token=/test_token=$TEST_TOKEN/" test_local/test.cfg
+- sed -i 's/$(id -u)/0:0/' test_local/run_tests.sh
 script:
-  - kb-sdk validate
+- kb-sdk test
+after_success:
+- cp test_local/workdir/.coverage .
+- sudo mkdir -p /kb/module/lib/
+- sudo cp -R test_local/workdir/kb/module/lib/kb_deseq /kb/module/lib
+- coverage report -m
+- coveralls
+
+env:
+  global:
+    # Encrypted TEST_TOKEN env var set to an appdev developer key
+    secure: lPrCmQfaByHvWvYz2XatzMKseCG3z6LGn2LY7k5n6pfyz4iiLocM3O3k0kEE5gImZ/HDzFbCKY483Fo9fDHLyTQNofK7sl+r5wxMirDOBdSKkPnk3bNUCaPUkH74g8OQgQnJWFcLEcrmDAcpt9ZbMo2DM+ttUKepof4/r3NaJ0x7QYfBXpWQWsCmug8KgJv7aLiZEkXXG3h+4k5/BAAKHUe02ZxP+XX8Xt8jXDP5cRABgNEcLLIuSmnEK37pecKZb+xn/xm7CwK3rZOJh9SnfmZUP53h1unyhN5QFRb2uc9O8fKPlpF4H/WmawPn6ampgU9kKWtSVOEWESLJNjOLWolbPb82qtLqRSxIyXC6rBg9R4hq2SKY8ZfZYzJffL6Ellh5k6U8mb8m1oD2OEUNZUNpG7SqpMH/NVolhonXao8lEtrXXkXFigcOOI7xCypgcm9Hb0FedlFid4j4+gHveBhdnHY+VbbbduMq8HXjXVKfxjRN7B1qsvsV6Tp2l/EnvF2tikOYQwmI+9mZ8Jr+2qTHWSPqe6d+u6anI2SEF8xjgwSGRQlB7Qe3wWRrzA/XagOhKht+oH6R1IQuxSlT3y48t27T5EBOB7HSxMxr3mpRCBYALhHy4UbS7ySrPAcVDuVvOwUT5dbHYOhjvEpUdX4ur5lBDkZlSgtDKGcB8co=

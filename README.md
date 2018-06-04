@@ -1,44 +1,83 @@
-[![Build Status](https://travis-ci.org/chenry/KBaseReport.svg?branch=master)](https://travis-ci.org/chenry/KBaseReport)
 
 # KBaseReport
----
 
-The KBaseReports module is the preferred way to communicate results to users. The example module contains a minimal use
-case where a string is displayed to the user (supplied in the 'text_message' field) along with links to new objects 
-created by the app (supplied in the 'objects_created' field). However this module also contains functionality to create 
-and display HTML webpages and serve files directly for user download. A more typical and feature rich example can be
-found in KBase's implementation of [Ballgown](https://github.com/kbaseapps/kb_ballgown/blob/1b77c87/lib/kb_ballgown/core/ballgown_util.py#L66-L167)
+This is a [KBase SDK](https://github.com/kbase/kb_sdk) app that can be used within other apps to generate output reports that describe the results of running an app.
 
-An annotated copy of the master function is copied below:
-```python
-def _generate_report(self, params, result_directory, diff_expression_matrix_set_ref):
-        """
-        _generate_report: generate summary report
-        """
-        print('creating report')
-        # Files to be presented directly to the user are copied to a output directory, zipped and returned as a list of paths
-        output_files = self._generate_output_file_list(result_directory)
-        
-        # A folder for the display web page is created(L74 in ballgown repo linked above), reference data (could also be 
-        # embedded images) for the page are copied in(L78), custom html is generated(L81-95), template is updated with 
-        # custom html(L98-104), the complete web page is saved to SHOCK which will serve the data(L106) and an object with 
-        # that reference is returned(L109)
-        output_html_files = self._generate_html_report(result_directory, params, diff_expression_matrix_set_ref)
+[How to create a KBaseReport](https://kbase.github.io/kb_sdk_docs/howtos/create_a_report.html)
 
-        report_params = {
-              'message': '',
-              'workspace_name': params.get('workspace_name'),
-              'file_links': output_files,
-              'html_links': output_html_files,
-              'direct_html_link_index': 0,
-              'html_window_height': 333,
-              'report_object_name': 'kb_ballgown_report_' + str(uuid.uuid4())}
-        
-        # Make the client, generate the report
-        kbase_report_client = KBaseReport(self.callback_url)
-        output = kbase_report_client.create_extended_report(report_params)
-        # Return references which will allow inline display of the report in the Narrative
-        report_output = {'report_name': output['name'], 'report_ref': output['ref']}
+# API
 
-        return report_output
+Install in your own KBase SDK app with:
+
+```sh
+$ kb-sdk install KBaseReport
+```
+
+## Initialization
+
+Initialize the client using the `callback_url` from your `MyModuleImpl.py` class:
+
+```py
+from KBaseReport.KBaseReportClient import KBaseReport
+...
+report_client = KBaseReport(self.callback_url)
+```
+
+## Creating a report
+
+Use the method **`report_client.create_extended_report(params)`** to create a report object along with the following parameters, passed as a dictionary:
+
+* `message`: (optional string) basic result message to show in the report
+* `report_object_name`: (optional string) a name to give the workspace object that stores the report.
+* `workspace_id`: (optional integer) id of your workspace. Preferred over `workspace_name` as it's immutable. Required if `workspace_name` is absent.
+* `workspace_name`: (optional string) string name of your workspace. Requried if `workspace_id` is absent.
+* `direct_html`: (optional string) raw HTML to show in the report
+* `objects_created`: (optional list of WorkspaceObject) data objects that were created as a result of running your app, such as assemblies or genomes
+* `warnings`: (optional list of strings) any warnings messages generated from running the app
+* `file_links`: (optional list of dicts) files to attach to the report (see the valid key/vals below)
+* `html_links`: (optional list of dicts) HTML files to attach and display in the report (see the additional information below)
+* `direct_html_link_index`: (optional integer) index in `html_links` that you want to use as the main/default report view
+* `html_window_height`: (optional float) fixed pixel height of your report view
+* `summary_window_height`: (optional float) fixed pixel height of the summary within your report
+
+_Example usage:_
+
+```py
+report = report_client.create_extended_report({
+    'direct_html_link_index': 0,
+    'html_links': [html_file],
+    'report_object_name': report_name,
+    'workspace_name': workspace_name
+})
+```
+
+### File links and HTML links
+
+The `file_links` and `html_links` params can have the following keys:
+
+* `shock_id`: (required string) Shock ID for a file. Not required if `path` is present.
+* `path`: (required string) Full file path for a file (in scratch). Not required if `shock_id` is present.
+* `name`: (required string) name of the file
+* `description`: (optional string) Readable description of the file
+
+For the `path` parameter, this can either point to a single file or a directory. If it points to a directory, then it will be zipped and uploaded for you.
+
+If you pass in a directory as your `path` for HTML reports, you can include additional files in that directory, such as images or PDFs. You can link to those files from your main HTML page by using relative links.
+
+> Important: Be sure to set the name of your main HTML file (eg. `index.html`) to the `'name'` key in your `html_links` dictionary.
+
+For example, to generate an HTML report:
+
+```
+html_dir = {
+    'path': html_dir_path,
+    'name': 'index.html',  # MUST match the filename of your main html page
+    'description': 'My HTML report'
+}
+report = report_client.create_extended_report({
+    'html_links': [html_dir],
+    'direct_html_link_index': 0,
+    'report_object_name': report_name,
+    'workspace_name': workspace_name
+})
 ```

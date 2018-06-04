@@ -1,23 +1,21 @@
-FROM kbase/kbase:sdkbase.latest
+FROM kbase/kbase:sdkbase2.latest
 MAINTAINER KBase Developer
 # -----------------------------------------
-
-# Insert apt-get instructions here to install
-# any required dependencies for your module.
+# In this section, you can install any system dependencies required
+# to run your App.  For instance, you could place an apt-get update or
+# install line here, a git checkout to download code, or run any other
+# installation scripts.
 
 # RUN apt-get update
-RUN cpanm -i Config::IniFiles && \
-    cpanm -i UUID::Random && \
-    cpanm -i HTML::SimpleLinkExtor && \
-    cpanm -i WWW::Mechanize --force && \
-    cpanm -i MIME::Base64 && \
-    apt-get -y install nano
+
+# Install pip dependencies
+RUN pip install -U pip cerberus==1.2
 
 # -----------------------------------------
 
 COPY ./ /kb/module
-RUN mkdir -p /kb/module/work && \
-    chmod -R 777 /kb/module
+RUN mkdir -p /kb/module/work
+RUN chmod -R a+rw /kb/module
 
 WORKDIR /kb/module
 
