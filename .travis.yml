@@ -1,29 +1,29 @@
 language: python
-python: ['2.7']
+python:
+- '2.7'
 sudo: required
-services: [docker]
-
+services:
+- docker
 install:
-  - docker pull kbase/kb-sdk
-  - docker run kbase/kb-sdk genscript > $HOME/bin/kb-sdk
-  - chmod 755 $HOME/bin/kb-sdk
-  - export PATH=$PATH:$HOME/bin/kb-sdk
-  - kb-sdk sdkbase
-  - kb-sdk test || true
-  - make build-test-script
-  - sed -i "s/test_token=/test_token=$TEST_TOKEN/" test_local/test.cfg
-  - sed -i 's/$(id -u)/0:0/' test_local/run_tests.sh
-
+- docker pull kbase/kb-sdk
+- docker run kbase/kb-sdk genscript > $HOME/bin/kb-sdk
+- chmod 755 $HOME/bin/kb-sdk
+- export PATH=$PATH:$HOME/bin/kb-sdk
+- kb-sdk sdkbase
+- kb-sdk test || true
+- make build-test-script
+- sed -i "s/test_token=/test_token=$TEST_TOKEN/" test_local/test.cfg
+- sed -i 's/$(id -u)/0:0/' test_local/run_tests.sh
 script:
-  - kb-sdk test
-
+- kb-sdk test
 after_success:
-  - cp test_local/workdir/.coverage .
-  - sudo mkdir -p /kb/module/lib/
-  - sudo cp -R test_local/workdir/kb/module/lib/kb_deseq /kb/module/lib
-  - coverage report -m
-  - coveralls
+- cp test_local/workdir/.coverage .
+- sudo mkdir -p /kb/module/lib/
+- sudo cp -R test_local/workdir/kb/module/lib/kb_deseq /kb/module/lib
+- coverage report -m
+- coveralls
 
 env:
   global:
-    secure: "V8MizLuagl1odA8qggfNev0r2hQNDgD4lAZ0h3Q+54FKiNqFBgdnrdu7JOlnKJIlNypaZ9QH96+lj219duFA79/CN3/kYTUUicUBX8xVfx7TGTPEYPlq5ReDXb8yisOHFwHVk8E34VrHgnI621+PmeORNNIMF8tTtYdluH78cpUGASteywRADbmEz0TdruHRVgU/ZlX10bREfiHPNLNUhOUGRLPJCfU63ZIoM/UvgR2S7y/6VA+1levlZ25dl32CLovAuFhL0owoAnFxhz2Bm7BJ60A1pt9JEiUkO7rfdLUMTGd39SzeNFYRz8ws3+xbEmKhCKlAy5v6wk6hXNZr3aVB0en+izrOXRvosz8XVoZZAQ/oLzJNDS5vVLqUfDdHYTPXV0jB28RK5hUoAlxbhP5wOJvGmmFj9sLPSitEWvNZ8PRarDxdScebZb9T34ZKlQwYpGcZPBGn1woLGcKv5LDaowVhmysPDo6yHKMPGTScjuJduwQW0slDpaZ+YIQ8wRwpXyXvKSicQOKRLYFUhaHAQe+/RxiBeSFGf5fOGHwntqYbtuoXd7wN+uxEfL6q6h7v8So6115EOHKPPAQP4hO2znP2/88IZlF6I6FwSC9w+ISF7FmmS4oJgstIw33OQwjRAZ1rG7O5IL91yiRU1wfoODCdOvwRhbGHI0sooUE="
+    # Encrypted TEST_TOKEN env var set to an appdev developer key
+    secure: lPrCmQfaByHvWvYz2XatzMKseCG3z6LGn2LY7k5n6pfyz4iiLocM3O3k0kEE5gImZ/HDzFbCKY483Fo9fDHLyTQNofK7sl+r5wxMirDOBdSKkPnk3bNUCaPUkH74g8OQgQnJWFcLEcrmDAcpt9ZbMo2DM+ttUKepof4/r3NaJ0x7QYfBXpWQWsCmug8KgJv7aLiZEkXXG3h+4k5/BAAKHUe02ZxP+XX8Xt8jXDP5cRABgNEcLLIuSmnEK37pecKZb+xn/xm7CwK3rZOJh9SnfmZUP53h1unyhN5QFRb2uc9O8fKPlpF4H/WmawPn6ampgU9kKWtSVOEWESLJNjOLWolbPb82qtLqRSxIyXC6rBg9R4hq2SKY8ZfZYzJffL6Ellh5k6U8mb8m1oD2OEUNZUNpG7SqpMH/NVolhonXao8lEtrXXkXFigcOOI7xCypgcm9Hb0FedlFid4j4+gHveBhdnHY+VbbbduMq8HXjXVKfxjRN7B1qsvsV6Tp2l/EnvF2tikOYQwmI+9mZ8Jr+2qTHWSPqe6d+u6anI2SEF8xjgwSGRQlB7Qe3wWRrzA/XagOhKht+oH6R1IQuxSlT3y48t27T5EBOB7HSxMxr3mpRCBYALhHy4UbS7ySrPAcVDuVvOwUT5dbHYOhjvEpUdX4ur5lBDkZlSgtDKGcB8co=
