@@ -139,19 +139,12 @@ def _validate_html_index(html_links, index):
 
 def _format_errors(errors, params):
     """ Make human-readable error messages from a cerberus validation instance """
-    err_str = ""
     # Create a bulleted list of each cerberus error message
-    for key in errors:
-        for err_msg in errors[key]:
-            err_str += " * " + key + ": " + err_msg + "\n"
     return "".join([
         "KBaseReport parameter validation errors:\n",
-        err_str,
+        pprint.pformat(errors),
         "You parameters were:\n",
         pprint.pformat(params)
-        # "\n(View the type spec here: ",
-        # Can point to a KIDL type spec for user reference:
-        # "https://github.com/jayrbolton/KBaseReport/blob/master/KBaseReport.spec)\n",
     ])
 
 # Re-used validations
