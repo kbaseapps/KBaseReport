@@ -181,7 +181,8 @@ class KBaseReportTest(unittest.TestCase):
         """ Test a file link path where the file is non-existent """
         file = {
             'name': 'a',
-            'description': 'a',
+            'description': 'desc',
+            'label': 'label',
             'path': 'tmp/no.txt'
         }
         with self.assertRaises(ValueError) as err:
@@ -201,11 +202,13 @@ class KBaseReportTest(unittest.TestCase):
                 {
                     'name': 'a',
                     'description': 'a',
+                    'label': 'a',
                     'path': self.a_file_path
                 },
                 {
                     'name': 'b',
                     'description': 'b',
+                    'label': 'b',
                     'path': self.b_file_path
                 }
             ]
@@ -220,11 +223,13 @@ class KBaseReportTest(unittest.TestCase):
                 {
                     'name': 'a',
                     'description': 'a',
+                    'label': 'a',
                     'shock_id': self.a_file_shock['shock_id']
                 },
                 {
                     'name': 'b',
                     'description': 'b',
+                    'label': 'b',
                     'shock_id': self.b_file_shock['shock_id']
                 }
             ]
@@ -240,11 +245,13 @@ class KBaseReportTest(unittest.TestCase):
                 {
                     'name': 'a',
                     'description': 'a',
+                    'label': 'a',
                     'shock_id': self.a_file_shock['shock_id']
                 },
                 {
                     'name': 'b',
                     'description': 'b',
+                    'label': 'b',
                     'shock_id': self.b_file_shock['shock_id']
                 }
             ]
@@ -278,11 +285,14 @@ class KBaseReportTest(unittest.TestCase):
                 {
                     'name': 'index.html',
                     'description': 'a',
+                    'label': 'a',
                     'path': self.a_html_path
                 },
                 {
                     'name': 'b',
-                    'description': 'b', 'path': self.b_html_path
+                    'description': 'b',
+                    'label': 'b',
+                    'path': self.b_html_path
                 }
             ]
         })

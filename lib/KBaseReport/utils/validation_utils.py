@@ -177,6 +177,7 @@ extended_file_schema = {
         'name': {'type': 'string'},
         'shock_id': {'type': 'string'},
         'path': {'type': 'string'},
-        'description': {'type': 'string'}
+        'description': {'type': 'string'},
+        'label': {'type': 'string'}
     }
 }
