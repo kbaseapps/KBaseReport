@@ -208,7 +208,6 @@ class KBaseReportTest(unittest.TestCase):
                 {
                     'name': 'b',
                     'description': 'b',
-                    'label': 'b',
                     'path': self.b_file_path
                 }
             ]
