@@ -6,13 +6,10 @@ import shutil
 
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 
-from os import environ
 try:
     from ConfigParser import ConfigParser  # py2
-except:
+except:  # noqa
     from configparser import ConfigParser  # py3
-
-from pprint import pprint  # noqa: F401
 
 from biokbase.workspace.client import Workspace as workspaceService
 from KBaseReport.KBaseReportImpl import KBaseReport
@@ -25,8 +22,8 @@ class KBaseReportTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        token = environ.get('KB_AUTH_TOKEN', None)
-        config_file = environ.get('KB_DEPLOYMENT_CONFIG', None)
+        token = os.environ.get('KB_AUTH_TOKEN', None)
+        config_file = os.environ.get('KB_DEPLOYMENT_CONFIG', None)
         cls.cfg = {}
         config = ConfigParser()
         config.read(config_file)
@@ -65,10 +62,10 @@ class KBaseReportTest(unittest.TestCase):
         shutil.copy2(os.path.join(dirname, 'data/b.txt'), cls.b_file_path)
         # Upload files to shock
         cls.a_file_shock = cls.dfu.file_to_shock({
-            'file_path': cls.a_file_path, 'make_handle': 0, 'pack': 'zip'
+            'file_path': cls.a_file_path, 'make_handle': 0
         })
         cls.b_file_shock = cls.dfu.file_to_shock({
-            'file_path': cls.b_file_path, 'make_handle': 0, 'pack': 'zip'
+            'file_path': cls.b_file_path, 'make_handle': 0
         })
 
     @classmethod
@@ -85,7 +82,7 @@ class KBaseReportTest(unittest.TestCase):
             return self.__class__.wsName
         suffix = int(time.time() * 1000)
         wsName = "test_KBaseReport_" + str(suffix)
-        ret = self.getWsClient().create_workspace({'workspace': wsName})  # noqa
+        ret = self.getWsClient().create_workspace({'workspace': wsName})
         self.__class__.wsName = wsName
         self.__class__.wsID = ret[0]
         return wsName
@@ -109,10 +106,11 @@ class KBaseReportTest(unittest.TestCase):
     def check_extended_result(self, result, link_name, file_names):
         """
         Test utility: check the file upload results for an extended report
-        :param result: result dictionary from running .create_extended_report
-        :param link_name: one of "html_links" or "file_links"
-        :param file_names: names of the files for us to check against
-        :returns: none
+        Args:
+          result - result dictionary from running .create_extended_report
+          link_name - one of "html_links" or "file_links"
+          file_names - names of the files for us to check against
+        Returns None
         """
         self.assertEqual(self.getImpl().status(self.getContext())[0]['state'], 'OK')
         self.assertTrue(len(result[0]['ref']))
@@ -320,3 +318,26 @@ class KBaseReportTest(unittest.TestCase):
         }
         with self.assertRaises(IndexError):
             self.getImpl().create_extended_report(self.getContext(), params)
+
+    def test_direct_html(self):
+        """ Test the case where they pass an out of bounds html index """
+        direct_html = '<p>Hello, world.</p>'
+        params = {
+            'workspace_name': self.getWsName(),
+            'direct_html': direct_html
+        }
+        result = self.getImpl().create_extended_report(self.getContext(), params)
+        obj = self.dfu.get_objects({'object_refs': [result[0]['ref']]})
+        self.assertEqual(obj['data'][0]['data']['direct_html'], direct_html)
+
+    def test_direct_html_none(self):
+        """ Test the case where they pass an out of bounds html index """
+        params = {
+            'workspace_name': self.getWsName(),
+            'message': 'hello world',
+            'direct_html': None,
+            'direct_html_link_index': None
+        }
+        result = self.getImpl().create_extended_report(self.getContext(), params)
+        obj = self.dfu.get_objects({'object_refs': [result[0]['ref']]})
+        self.assertEqual(obj['data'][0]['data']['direct_html'], None)

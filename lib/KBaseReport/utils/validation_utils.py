@@ -20,7 +20,7 @@ def validate_simple_report_params(params):
             'type': 'dict',
             'required': True,
             'schema': {
-                'text_message': {'type': 'string'},
+                'text_message': {'type': 'string', 'nullable': True},
                 'warnings': {
                     'type': 'list',
                     'schema': {'type': 'string'}
@@ -30,7 +30,8 @@ def validate_simple_report_params(params):
                     'schema': object_created_schema
                 },
                 'direct_html': {
-                    'type': 'string'
+                    'type': 'string',
+                    'nullable': True
                 }
             }
         }
@@ -46,7 +47,7 @@ def validate_extended_report_params(params):
     validator = Validator({
         'workspace_name': {'type': 'string', 'minlength': 1},
         'workspace_id': {'type': 'integer', 'min': 0},
-        'message': {'type': 'string'},
+        'message': {'type': 'string', 'nullable': True},
         'objects_created': {
             'type': 'list',
             'schema': object_created_schema,
@@ -63,11 +64,11 @@ def validate_extended_report_params(params):
             'type': 'list',
             'schema': extended_file_schema
         },
-        'report_object_name': {'type': 'string'},
-        'html_window_height': {'type': 'integer', 'min': 1},
-        'summary_window_height': {'type': 'integer', 'min': 1},
-        'direct_html_link_index': {'type': 'integer', 'min': 0},
-        'direct_html': {'type': 'string'}
+        'report_object_name': {'type': 'string', 'nullable': True},
+        'html_window_height': {'type': 'integer', 'min': 1, 'nullable': True},
+        'summary_window_height': {'type': 'integer', 'min': 1, 'nullable': True},
+        'direct_html_link_index': {'type': 'integer', 'min': 0, 'nullable': True},
+        'direct_html': {'type': 'string', 'nullable': True}
     })
     _validate_html_index(params.get('html_links', []), params.get('direct_html_link_index'))
     _require_workspace_id_or_name(params)
@@ -147,6 +148,7 @@ def _format_errors(errors, params):
         pprint.pformat(params)
     ])
 
+
 # Re-used validations
 
 # Workspace object (corresponding to the KIDL spec's WorkspaceObject)
@@ -154,7 +156,7 @@ object_created_schema = {
     'type': 'dict',
     'schema': {
         'ref': {'required': True, 'type': 'string', 'minlength': 1},
-        'description': {'type': 'string'}
+        'description': {'type': 'string', 'nullable': True}
     }
 }
 
@@ -162,11 +164,11 @@ object_created_schema = {
 linked_file_schema = {
     'type': 'dict',
     'schema': {
-        'handle': {'type': 'string'},
-        'description': {'type': 'string'},
-        'name': {'type': 'string'},
-        'label': {'type': 'string'},
-        'URL': {'type': 'string', 'minlength': 1}
+        'handle': {'type': 'string', 'required': True},
+        'description': {'type': 'string', 'nullable': True},
+        'name': {'type': 'string', 'nullable': True},
+        'label': {'type': 'string', 'nullable': True},
+        'URL': {'type': 'string', 'minlength': 1, 'nullable': True}
     }
 }
 
@@ -174,10 +176,10 @@ linked_file_schema = {
 extended_file_schema = {
     'type': 'dict',
     'schema': {
-        'name': {'type': 'string'},
-        'shock_id': {'type': 'string'},
-        'path': {'type': 'string'},
-        'description': {'type': 'string'},
-        'label': {'type': 'string'}
+        'name': {'type': 'string', 'nullable': True},
+        'shock_id': {'type': 'string', 'nullable': True},
+        'path': {'type': 'string', 'nullable': True},
+        'description': {'type': 'string', 'nullable': True},
+        'label': {'type': 'string', 'nullable': True}
     }
 }
