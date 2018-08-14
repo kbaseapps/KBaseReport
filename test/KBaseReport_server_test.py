@@ -320,7 +320,7 @@ class KBaseReportTest(unittest.TestCase):
             self.getImpl().create_extended_report(self.getContext(), params)
 
     def test_direct_html(self):
-        """ Test the case where they pass an out of bounds html index """
+        """ Test the case where they pass in direct_html """
         direct_html = '<p>Hello, world.</p>'
         params = {
             'workspace_name': self.getWsName(),
@@ -331,7 +331,7 @@ class KBaseReportTest(unittest.TestCase):
         self.assertEqual(obj['data'][0]['data']['direct_html'], direct_html)
 
     def test_direct_html_none(self):
-        """ Test the case where they pass an out of bounds html index """
+        """ Test the case where they pass None for the direct_html param """
         params = {
             'workspace_name': self.getWsName(),
             'message': 'hello world',
