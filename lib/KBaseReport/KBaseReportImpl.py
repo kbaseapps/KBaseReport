@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #BEGIN_HEADER
-from DataFileUtil.DataFileUtilClient import DataFileUtil
+from installed_clients.DataFileUtilClient import DataFileUtil
 import utils.report_utils as report_utils
 from utils.validation_utils import validate_simple_report_params, validate_extended_report_params
 import os
@@ -22,9 +22,9 @@ class KBaseReport:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "3.0.1"
-    GIT_URL = "https://github.com/kbaseapps/KBaseReport"
-    GIT_COMMIT_HASH = "07fdc69fe6dfbb1aa21fe120d52402a06054bb0e"
+    VERSION = "3.0.3"
+    GIT_URL = "https://github.com/kbaseapps/KBaseReport.git"
+    GIT_COMMIT_HASH = "b2a10f82aadad8937f84144815fb4dafc1e6ffaf"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER

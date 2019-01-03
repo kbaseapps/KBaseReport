@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from file_utils import fetch_or_upload_file_links, fetch_or_upload_html_links
 import time as _time
-from DataFileUtil.baseclient import ServerError as _DFUError
+from installed_clients.baseclient import ServerError as _DFUError
 from uuid import uuid4
 
 """ Utilities for creating reports using DataFileUtil """

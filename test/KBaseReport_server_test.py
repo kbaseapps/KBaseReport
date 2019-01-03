@@ -4,7 +4,7 @@ import os
 import time
 import shutil
 
-from DataFileUtil.DataFileUtilClient import DataFileUtil
+from installed_clients.DataFileUtilClient import DataFileUtil
 
 try:
     from ConfigParser import ConfigParser  # py2
