@@ -3,7 +3,7 @@ import os
 import shutil
 from uuid import uuid4
 
-from validation_utils import validate_files
+from .validation_utils import validate_files
 
 """
 Utilities for fetching/uploading files

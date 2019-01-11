@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
-import unittest
 import os
-import time
 import shutil
+import time
+import unittest
+from configparser import ConfigParser  # py3
+from uuid import uuid4
 
-from installed_clients.DataFileUtilClient import DataFileUtil
-
-try:
-    from ConfigParser import ConfigParser  # py2
-except:  # noqa
-    from configparser import ConfigParser  # py3
-
-from biokbase.workspace.client import Workspace as workspaceService
 from KBaseReport.KBaseReportImpl import KBaseReport
 from KBaseReport.KBaseReportServer import MethodContext
 from KBaseReport.authclient import KBaseAuth as _KBaseAuth
-from uuid import uuid4
+from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.WorkspaceClient import Workspace
 
 
 class KBaseReportTest(unittest.TestCase):
@@ -45,7 +40,7 @@ class KBaseReportTest(unittest.TestCase):
                              }],
                         'authenticated': 1})
         cls.wsURL = cls.cfg['workspace-url']
-        cls.wsClient = workspaceService(cls.wsURL)
+        cls.wsClient = Workspace(cls.wsURL)
         cls.serviceImpl = KBaseReport(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
@@ -119,7 +114,7 @@ class KBaseReportTest(unittest.TestCase):
         file_links = obj['data'][0]['data'][link_name]
         self.assertEqual(len(file_links), len(file_names))
         # Test that all the filenames listed in the report object map correctly
-        saved_names = set(map(lambda f: str(f['name']), file_links))
+        saved_names = set([str(f['name']) for f in file_links])
         self.assertEqual(saved_names, set(file_names))
 
     def test_create(self):
