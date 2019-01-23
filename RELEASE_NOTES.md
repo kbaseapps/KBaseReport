@@ -1,6 +1,10 @@
 KBaseReport Release Notes
 =========================================
 
+3.0.5
+-----
+- Converted to Python 3 with all unused modules removed
+
 3.0.0
 -----
 - Refactored the app into Python with improved tests and documentation
