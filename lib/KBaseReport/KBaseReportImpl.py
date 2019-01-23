@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #BEGIN_HEADER
 from installed_clients.DataFileUtilClient import DataFileUtil
-from . utils import report_utils
+from .utils import report_utils
 from .utils.validation_utils import validate_simple_report_params, validate_extended_report_params
 import os
 #END_HEADER
