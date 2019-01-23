@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from file_utils import fetch_or_upload_file_links, fetch_or_upload_html_links
+from .file_utils import fetch_or_upload_file_links, fetch_or_upload_html_links
 import time as _time
 from installed_clients.baseclient import ServerError as _DFUError
 from uuid import uuid4
@@ -97,8 +97,8 @@ def _save_object(dfu, params):
     try:
         return dfu.save_objects(params)[0]
     except _DFUError as err:
-        print(str(_time.time()) + ' DataFileUtil exception: ' + str(err))
+        print(f'{_time.time()} DataFileUtil exception: {err}')
         raise err
     except Exception as err:
-        print(str(_time.time()) + ' Unexpected DataFileUtil exception: ' + str(err))
+        print(f'{_time.time()} Unexpected DataFileUtil exception: {err}')
         raise err
