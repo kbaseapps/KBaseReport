@@ -2,6 +2,8 @@
 import os
 from cerberus import Validator
 import pprint
+from json import JSONDecodeError
+import json
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -93,6 +95,66 @@ def validate_files(files):
             raise ValueError(_format_errors(err, f))
 
 
+def valid_path(field, file_path, error):
+    """ ensure a file exists """
+    if (not os.path.isfile(file_path)):
+        error(field, 'does not exist on filesystem')
+
+
+def decode_json(field, string, error):
+    try:
+        template_data = json.loads(string)
+    except JSONDecodeError as err:
+        error(field, 'Invalid JSON: ' + err.msg + ' ' + str(err.pos))
+
+
+def validate_template_params(params, scratch_path):
+    """ Validate all parameters to KBaseReportImpl#create_report_from_template
+
+    :param params:       (dict)     input to be validated
+    :param scratch_path: (string)   path to the scratch directory, as specified in the app config
+
+    :return:
+    params (dict) - validated params
+    """
+    validator = Validator()
+
+    def path_contains_scratch(field, file_path, error):
+
+        if (file_path.find(scratch_path) != 0):
+            error(field, 'is not in the scratch directory')
+
+    validation_schema = {
+        'template_file': {
+            'type': 'string',
+            'minlength': 1,
+            'required': True,
+            'validator': valid_path,
+        },
+        'template_data_json': {
+            'type': 'string',
+            'validator': decode_json,
+        },
+        'output_file': {
+            'type': 'string',
+            'minlength': len(scratch_path) + 2,
+            'required': True,
+            'validator': path_contains_scratch,
+        },
+    }
+
+    if (not validator.validate(params, validation_schema)):
+        raise TypeError(_format_errors(validator.errors, params))
+
+    if ('template_data_json' in params):
+        params['template_data'] = json.loads(params['template_data_json'])
+        del params['template_data_json']
+    else:
+        params['template_data'] = {}
+
+    return params
+
+
 def _require_workspace_id_or_name(params):
     """
     We need either workspace_id or workspace_name, but we don't need both
@@ -144,7 +206,7 @@ def _format_errors(errors, params):
     return "".join([
         "KBaseReport parameter validation errors:\n",
         pprint.pformat(errors),
-        "You parameters were:\n",
+        "Your parameters were:\n",
         pprint.pformat(params)
     ])
 

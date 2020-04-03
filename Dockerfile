@@ -6,20 +6,18 @@ MAINTAINER KBase Developer
 # install line here, a git checkout to download code, or run any other
 # installation scripts.
 
-# RUN apt-get update
-
 # Install pip dependencies
-RUN pip install -U pip cerberus==1.2
+RUN pip install -U pip cerberus==1.2 Template-Toolkit-Python
 
 # -----------------------------------------
 
 COPY ./ /kb/module
-RUN mkdir -p /kb/module/work
-RUN chmod -R a+rw /kb/module
 
 WORKDIR /kb/module
 
-RUN make all
+RUN mkdir -p /kb/module/work \
+    && chmod -R a+rw /kb/module \
+    && make all
 
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 

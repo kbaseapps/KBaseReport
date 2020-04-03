@@ -18,6 +18,8 @@ default: compile
 all: compile build build-startup-script build-executable-script build-test-script
 
 compile:
+	git submodule update --init --recursive
+	git submodule update --remote
 	kb-sdk compile $(SPEC_FILE) \
 		--out $(LIB_DIR) \
 		--pysrvname $(SERVICE_CAPS).$(SERVICE_CAPS)Server \

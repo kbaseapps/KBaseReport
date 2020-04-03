@@ -1,0 +1,4 @@
+
+[submodule "kbase_report_templates"]
+	path = kbase_report_templates
+	url = https://github.com/kbaseIncubator/kbase_report_templates.git

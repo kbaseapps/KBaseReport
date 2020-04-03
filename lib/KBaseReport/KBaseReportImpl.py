@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #BEGIN_HEADER
 from installed_clients.DataFileUtilClient import DataFileUtil
-from .utils import report_utils
-from .utils.validation_utils import validate_simple_report_params, validate_extended_report_params
+from .utils import report_utils, template_utils
+from .utils.validation_utils import validate_simple_report_params, validate_extended_report_params, validate_template_params
 import os
 #END_HEADER
 
@@ -22,9 +22,9 @@ class KBaseReport:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "3.0.3"
-    GIT_URL = "https://github.com/kbaseapps/KBaseReport.git"
-    GIT_COMMIT_HASH = "b2a10f82aadad8937f84144815fb4dafc1e6ffaf"
+    VERSION = "3.1.0"
+    GIT_URL = "https://github.com/ialarmedalien/KBaseReport"
+    GIT_COMMIT_HASH = "1839e267bd43ad0697cb49e5408b6ab83574ac19"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -52,7 +52,7 @@ class KBaseReport:
            Required arguments: *     SimpleReport report - See the structure
            above *     string workspace_name - Workspace name of the running
            app. Required *         if workspace_id is absent *     int
-           workspace_id - Workspace ID of the running app. Required if *     
+           workspace_id - Workspace ID of the running app. Required if *
            workspace_name is absent) -> structure: parameter "report" of type
            "SimpleReport" (* A simple report for use in create() * Optional
            arguments: *     string text_message - Readable plain-text report
@@ -65,9 +65,9 @@ class KBaseReport:
            "direct_html" of String, parameter "warnings" of list of String,
            parameter "objects_created" of list of type "WorkspaceObject" (*
            Represents a Workspace object with some brief description text *
-           that can be associated with the object. * Required arguments: *   
+           that can be associated with the object. * Required arguments: *
            ws_id ref - workspace ID in the format
-           'workspace_id/object_id/version' * Optional arguments: *    
+           'workspace_id/object_id/version' * Optional arguments: *
            string description - A plaintext, human-readable description of
            the *         object created) -> structure: parameter "ref" of
            type "ws_id" (* Workspace ID reference in the format
@@ -77,7 +77,7 @@ class KBaseReport:
         :returns: instance of type "ReportInfo" (* The reference to the saved
            KBaseReport. This is the return object for * both create() and
            create_extended() * Returned data: *    ws_id ref - reference to a
-           workspace object in the form of *       
+           workspace object in the form of *
            'workspace_id/object_id/version'. This is a reference to a saved *
            Report object (see KBaseReportWorkspace.spec) *    string name -
            Plaintext unique name for the report. In *        create_extended,
@@ -115,12 +115,12 @@ class KBaseReport:
            workspace_id is absent *     int workspace_id - ID of workspace
            where the report should be saved. *         Required if
            workspace_name is absent * Optional arguments: *     string
-           message - Simple text message to store in the report object *    
+           message - Simple text message to store in the report object *
            list<WorkspaceObject> objects_created - List of result workspace
            objects that this app *         has created. They will be linked
            in the report view *     list<string> warnings - A list of
            plain-text warning messages *     list<File> html_links - A list
-           of paths or shock IDs pointing to HTML files or directories. *    
+           of paths or shock IDs pointing to HTML files or directories. *
            If you pass in paths to directories, they will be zipped and
            uploaded *     int direct_html_link_index - Index in html_links to
            set the direct/default view in the *         report. Set either
@@ -128,11 +128,11 @@ class KBaseReport:
            direct_html - Simple HTML text content that will be rendered
            within the report *         widget. Set either direct_html or
            direct_html_link_index, but not both *     list<File> file_links -
-           A list of file paths or shock node IDs. Allows the user to *      
+           A list of file paths or shock node IDs. Allows the user to *
            specify files that the report widget should link for download. If
-           you pass in paths *         to directories, they will be zipped * 
+           you pass in paths *         to directories, they will be zipped *
            string report_object_name - Name to use for the report object
-           (will *         be auto-generated if unspecified) *    
+           (will *         be auto-generated if unspecified) *
            html_window_height - Fixed height in pixels of the HTML window for
            the report *     summary_window_height - Fixed height in pixels of
            the summary window for the report) -> structure: parameter
@@ -140,7 +140,7 @@ class KBaseReport:
            "WorkspaceObject" (* Represents a Workspace object with some brief
            description text * that can be associated with the object. *
            Required arguments: *     ws_id ref - workspace ID in the format
-           'workspace_id/object_id/version' * Optional arguments: *    
+           'workspace_id/object_id/version' * Optional arguments: *
            string description - A plaintext, human-readable description of
            the *         object created) -> structure: parameter "ref" of
            type "ws_id" (* Workspace ID reference in the format
@@ -181,7 +181,7 @@ class KBaseReport:
         :returns: instance of type "ReportInfo" (* The reference to the saved
            KBaseReport. This is the return object for * both create() and
            create_extended() * Returned data: *    ws_id ref - reference to a
-           workspace object in the form of *       
+           workspace object in the form of *
            'workspace_id/object_id/version'. This is a reference to a saved *
            Report object (see KBaseReportWorkspace.spec) *    string name -
            Plaintext unique name for the report. In *        create_extended,
@@ -203,6 +203,51 @@ class KBaseReport:
                              'info is not type dict as required.')
         # return the results
         return [info]
+
+    def create_report_from_template(self, ctx, params):
+        """
+        Create a report from a template. This method takes a template file and
+        a data structure, renders the template, and saves the results to a file.
+        It returns the output file path in the form
+        { 'output_file': { 'path': '/path/to/file' } }
+        :param params: instance of type "CreateReportFromTemplateParams" (*
+           Render a template using the supplied data, saving the results to
+           an output * file in the scratch directory. * * Required arguments:
+           *     string template_file  -  Path to the template file to be
+           rendered. *     string output_file    -  Path to the file where
+           the rendered template *                              should be
+           saved. Must be in the scratch directory. * Optional: *     string
+           template_data_json -  Data for rendering in the template.) ->
+           structure: parameter "template_file" of String, parameter
+           "output_file" of String, parameter "template_data_json" of String
+        :returns: instance of type "File" (* A file to be linked in the
+           report. Pass in *either* a shock_id or a * path. If a path to a
+           file is given, then the file will be uploaded. If a * path to a
+           directory is given, then it will be zipped and uploaded. *
+           Required arguments: *     string path - Can be a file or directory
+           path. Required if shock_id is absent *     string shock_id - Shock
+           node ID. Required if path is absent *     string name - Plain-text
+           filename (eg. "results.zip") -- shown to the user * Optional
+           arguments: *     string label - A short description for the file
+           (eg. "Filter results") *     string description - A more detailed,
+           human-readable description of the file) -> structure: parameter
+           "path" of String, parameter "shock_id" of String, parameter "name"
+           of String, parameter "label" of String, parameter "description" of
+           String
+        """
+        # ctx is the context object
+        # return variables are: output_file_path
+        #BEGIN create_report_from_template
+        params = validate_template_params(params, self.scratch)
+        output_file_path = template_utils.render_template_to_file(params)
+        #END create_report_from_template
+
+        # At some point might do deeper type checking...
+        if not isinstance(output_file_path, dict):
+            raise ValueError('Method create_report_from_template return value ' +
+                             'output_file_path is not type dict as required.')
+        # return the results
+        return [output_file_path]
     def status(self, ctx):
         #BEGIN_STATUS
         returnVal = {'state': "OK",

@@ -1,6 +1,10 @@
 KBaseReport Release Notes
 =========================================
 
+3.1.0
+-----
+- Added in an endpoint for rendering templates.
+
 3.0.5
 -----
 - Converted to Python 3 with all unused modules removed

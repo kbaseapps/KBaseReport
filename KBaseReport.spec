@@ -151,4 +151,42 @@ module KBaseReport {
      */
     funcdef create_extended_report(CreateExtendedReportParams params)
         returns (ReportInfo info) authentication required;
+
+
+    /*
+     * Render a template using the supplied data, saving the results to an output
+     * file in the scratch directory.
+     *
+     * Required arguments:
+     *     string template_file  -  Path to the template file to be rendered.
+     *     string output_file    -  Path to the file where the rendered template
+     *                              should be saved. Must be in the scratch directory.
+     * Optional:
+     *     string template_data_json -  Data for rendering in the template.
+     */
+
+    typedef structure {
+        string template_file;
+        string output_file;
+        string template_data_json;
+    } CreateReportFromTemplateParams;
+
+    /*
+     * Create a report from a template. This method takes a template file and
+     * a data structure, renders the template, and saves the results to a file.
+     * It returns the output file path in the form
+     * { 'output_file': { 'path': '/path/to/file' } }
+     *
+     * To ensure that the template and the output file are accessible to both
+     * the KBaseReport service and the app requesting the template rendering, the
+     * template file should be copied into the shared `scratch` directory and the
+     * output_file location should also be in `scratch`.
+     *
+     * See https://github.com/kbaseIncubator/kbase_report_templates for sample
+     * page templates, standard includes, and instructions on creating your own
+     * templates.
+     */
+    funcdef create_report_from_template(CreateReportFromTemplateParams params)
+        returns (File output_file_path) authentication required;
+
 };
