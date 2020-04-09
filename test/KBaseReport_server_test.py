@@ -11,7 +11,7 @@ from KBaseReport.KBaseReportServer import MethodContext
 from KBaseReport.authclient import KBaseAuth as _KBaseAuth
 from installed_clients.DataFileUtilClient import DataFileUtil
 from installed_clients.WorkspaceClient import Workspace
-
+from test_template_utils import get_test_data
 
 class KBaseReportTest(unittest.TestCase):
 
@@ -166,9 +166,69 @@ class KBaseReportTest(unittest.TestCase):
         # Missing workspace id and name
         with self.assertRaises(TypeError) as err:
             self.getImpl().create_extended_report(self.getContext(), {})
+
         with self.assertRaises(TypeError) as err:
             self.getImpl().create_extended_report(self.getContext(), {'workspace_name': 123})
         self.assertTrue(str(err.exception))
+
+        # require both 'html_links' and 'direct_html_link_index'
+        with self.assertRaisesRegex(TypeError, "html_links.*?field 'direct_html_link_index' is required"):
+            self.getImpl().create_extended_report(self.getContext(), {
+                'workspace_id': 12345,
+                'html_links': [
+                    {
+                        'name': 'index.html',
+                        'path': self.a_html_path
+                    },
+                    {
+                        'name': 'b',
+                        'path': self.b_html_path
+                    }
+                ],
+            })
+
+        with self.assertRaisesRegex(TypeError, "direct_html_link_index.*?field 'html_links' is required"):
+            self.getImpl().create_extended_report(self.getContext(), {
+                'workspace_id': 12345,
+                'direct_html_link_index': 0,
+            })
+
+
+        # type error in the template params
+        with self.assertRaisesRegex(TypeError, 'template.*?must be of dict type'):
+            self.getImpl().create_extended_report(self.getContext(), {
+                'workspace_id': 12345,
+                'template': 'my_template_file.txt',
+            })
+
+        # too many params
+        err_str = 'supply only one of "template", "direct_html", and '
+        with self.assertRaisesRegex(ValueError, err_str):
+            self.getImpl().create_extended_report(self.getContext(), {
+                'workspace_id': 12345,
+                'template': {},
+                'direct_html': 'This is not valid html',
+            })
+
+        with self.assertRaisesRegex(ValueError, err_str):
+            self.getImpl().create_extended_report(self.getContext(), {
+                'workspace_id': 12345,
+                'template': {
+                    'this': 'that'
+                },
+                'direct_html_link_index': 0,
+                'html_links': [
+                    {
+                        'name': 'index.html',
+                        'path': self.a_html_path
+                    },
+                    {
+                        'name': 'b',
+                        'path': self.b_html_path
+                    }
+                ],
+            })
+
 
     def test_invalid_file_links(self):
         """ Test a file link path where the file is non-existent """
@@ -331,8 +391,40 @@ class KBaseReportTest(unittest.TestCase):
             'workspace_name': self.getWsName(),
             'message': 'hello world',
             'direct_html': None,
-            'direct_html_link_index': None
         }
         result = self.getImpl().create_extended_report(self.getContext(), params)
         obj = self.dfu.get_objects({'object_refs': [result[0]['ref']]})
         self.assertEqual(obj['data'][0]['data']['direct_html'], None)
+
+    def test_template(self):
+        """ Test the case where they want to use a template to generate HTML"""
+
+        TEST_DATA = get_test_data()
+        ref_text = TEST_DATA['render_test']['content']
+        result = self.getImpl().create_extended_report(self.getContext(), {
+            'workspace_name': self.getWsName(),
+            'workspace_id': self.getWsID(),
+            'template': {
+                'template_file': TEST_DATA['template'],
+                'template_data_json': TEST_DATA['content_json'],
+            },
+            'direct_html': None,
+        })
+        obj = self.dfu.get_objects({'object_refs': [result[0]['ref']]})
+        direct_html = obj['data'][0]['data']['direct_html']
+        self.assertEqual(direct_html.rstrip(), ref_text['abs_path'])
+
+        # relative path to template file
+        result = self.getImpl().create_extended_report(self.getContext(), {
+            'workspace_id': self.getWsID(),
+            'template': {
+                'template_file': TEST_DATA['template_file'],
+                'template_data_json': TEST_DATA['content_json'],
+            },
+            'direct_html': None,
+        })
+        obj = self.dfu.get_objects({'object_refs': [result[0]['ref']]})
+        direct_html = obj['data'][0]['data']['direct_html']
+        self.assertEqual(direct_html.rstrip(), ref_text['rel_path'])
+
+

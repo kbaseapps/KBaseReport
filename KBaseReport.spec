@@ -42,7 +42,8 @@ module KBaseReport {
      * Parameters for the create() method
      *
      * Pass in *either* workspace_name or workspace_id -- only one is needed.
-     * Note that workspace_id is preferred over workspace_name because workspace_id immutable.
+     * Note that workspace_id is preferred over workspace_name because workspace_id immutable. If
+     * both are provided, the workspace_id will be used.
      *
      * Required arguments:
      *     SimpleReport report - See the structure above
@@ -100,6 +101,11 @@ module KBaseReport {
         string description;
     } File;
 
+    typedef structure {
+        string template_file;
+        string template_data_json;
+    } TemplateParams;
+
     /*
      * Parameters used to create a more complex report with file and HTML links
      *
@@ -118,10 +124,15 @@ module KBaseReport {
      *     list<string> warnings - A list of plain-text warning messages
      *     list<File> html_links - A list of paths or shock IDs pointing to HTML files or directories.
      *         If you pass in paths to directories, they will be zipped and uploaded
-     *     int direct_html_link_index - Index in html_links to set the direct/default view in the
-     *         report. Set either direct_html_link_index or direct_html, but not both
-     *     string direct_html - Simple HTML text content that will be rendered within the report
-     *         widget. Set either direct_html or direct_html_link_index, but not both
+     *     int direct_html_link_index - Index in html_links to set the direct/default view in the report.
+     *         Set only one of 'direct_html', 'template', and 'html_links'/'direct_html_link_index'.
+     *         Setting both 'template' and 'html_links'/'direct_html_link_index' will generate an error.
+     *     string direct_html - Simple HTML text content to be rendered within the report widget.
+     *         Set only one of 'direct_html', 'template', and 'html_links'/'direct_html_link_index'.
+     *         Setting both 'template' and 'direct_html' will generate an error.
+     *     TemplateParams template - render a template to produce HTML text content that will be
+     *         rendered within the report widget. Setting 'template' and 'direct_html' or
+     *         'html_links'/'direct_html_link_index' will generate an error.
      *     list<File> file_links - A list of file paths or shock node IDs. Allows the user to
      *         specify files that the report widget should link for download. If you pass in paths
      *         to directories, they will be zipped
@@ -135,6 +146,7 @@ module KBaseReport {
         list<WorkspaceObject> objects_created;
         list<string> warnings;
         list<File> html_links;
+        TemplateParams template;
         string direct_html;
         int direct_html_link_index;
         list<File> file_links;
@@ -169,10 +181,10 @@ module KBaseReport {
         string template_file;
         string output_file;
         string template_data_json;
-    } CreateReportFromTemplateParams;
+    } RenderTemplateParams;
 
     /*
-     * Create a report from a template. This method takes a template file and
+     * Render a file from a template. This method takes a template file and
      * a data structure, renders the template, and saves the results to a file.
      * It returns the output file path in the form
      * { 'output_file': { 'path': '/path/to/file' } }
@@ -186,7 +198,7 @@ module KBaseReport {
      * page templates, standard includes, and instructions on creating your own
      * templates.
      */
-    funcdef create_report_from_template(CreateReportFromTemplateParams params)
+    funcdef render_template(RenderTemplateParams params)
         returns (File output_file_path) authentication required;
 
 };

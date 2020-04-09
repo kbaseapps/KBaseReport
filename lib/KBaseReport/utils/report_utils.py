@@ -79,12 +79,12 @@ def create_extended(params, dfu):
 def _get_workspace_id(dfu, params):
     """
     Get the workspace ID from the params, which may either have 'workspace_id'
-    or 'workspace_name'
+    or 'workspace_name'. Workspace ID is immutable so should take precedence.
     """
-    if 'workspace_name' in params:
-        return dfu.ws_name_to_id(params['workspace_name'])
-    else:
+    if 'workspace_id' in params:
         return params.get('workspace_id')
+
+    return dfu.ws_name_to_id(params['workspace_name'])
 
 
 def _get_object_ref(obj):

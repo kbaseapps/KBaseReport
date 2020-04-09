@@ -60,7 +60,8 @@ def validate_extended_report_params(params):
         },
         'html_links': {
             'type': 'list',
-            'schema': extended_file_schema
+            'schema': extended_file_schema,
+            'dependencies': 'direct_html_link_index',
         },
         'file_links': {
             'type': 'list',
@@ -69,11 +70,21 @@ def validate_extended_report_params(params):
         'report_object_name': {'type': 'string', 'nullable': True},
         'html_window_height': {'type': 'integer', 'min': 1, 'nullable': True},
         'summary_window_height': {'type': 'integer', 'min': 1, 'nullable': True},
-        'direct_html_link_index': {'type': 'integer', 'min': 0, 'nullable': True},
-        'direct_html': {'type': 'string', 'nullable': True}
+        'direct_html_link_index': {
+            'type': 'integer',
+            'min': 0,
+            'nullable': True,
+            'dependencies': 'html_links',
+        },
+        'direct_html': {'type': 'string', 'nullable': True},
+        'template': {
+            'type': 'dict',
+        },
     })
-    _validate_html_index(params.get('html_links', []), params.get('direct_html_link_index'))
+    _require_only_one_html_input(params)
     _require_workspace_id_or_name(params)
+    _validate_html_index(params.get('html_links', []), params.get('direct_html_link_index'))
+
     if not validator.validate(params):
         raise TypeError(_format_errors(validator.errors, params))
     return params
@@ -95,64 +106,123 @@ def validate_files(files):
             raise ValueError(_format_errors(err, f))
 
 
-def valid_path(field, file_path, error):
+def valid_dir_path(field, dir_path, error):
+    """ ensure a directory exists """
+    if (not os.path.isdir(dir_path)):
+        error(field, 'does not exist on filesystem')
+
+def valid_file_path(field, file_path, error):
     """ ensure a file exists """
     if (not os.path.isfile(file_path)):
         error(field, 'does not exist on filesystem')
 
 
-def decode_json(field, string, error):
+def valid_json(field, string, error):
     try:
         template_data = json.loads(string)
     except JSONDecodeError as err:
         error(field, 'Invalid JSON: ' + err.msg + ' ' + str(err.pos))
 
 
-def validate_template_params(params, scratch_path):
-    """ Validate all parameters to KBaseReportImpl#create_report_from_template
+def validate_template_params(params, config, with_output_file=False):
+    """ Validate all parameters to KBaseReportImpl#render_template
 
-    :param params:       (dict)     input to be validated
-    :param scratch_path: (string)   path to the scratch directory, as specified in the app config
+    :param params:  (dict)  input to be validated
+    :param config:  (dict)  app config
+    :param with_output_file: (bool) whether or not the output_file param should be validated
 
     :return:
     params (dict) - validated params
     """
-    validator = Validator()
+    validator = Validator(purge_unknown = True)
+
+    config_validation_schema = {
+        'scratch': {
+            'type': 'string',
+            'minlength': 2,
+            'required': True,
+            'validator': valid_dir_path,
+        },
+        'template_toolkit': {
+            'type': 'dict',
+        }
+    }
+
+    if not validator.validate(config, config_validation_schema):
+        raise TypeError(_format_errors(validator.errors, config))
+
+    validated_params = {
+        'scratch': config['scratch'],
+        'template_config': config['template_toolkit'] if 'template_toolkit' in config else {}
+    }
+
+    scratch_path = config['scratch']
 
     def path_contains_scratch(field, file_path, error):
 
-        if (file_path.find(scratch_path) != 0):
+        if file_path.find(scratch_path) != 0:
             error(field, 'is not in the scratch directory')
 
-    validation_schema = {
+    tmpl_validation_schema = {
         'template_file': {
             'type': 'string',
-            'minlength': 1,
+            'minlength': 3,
             'required': True,
-            'validator': valid_path,
         },
         'template_data_json': {
             'type': 'string',
-            'validator': decode_json,
+            'validator': valid_json,
         },
-        'output_file': {
+    }
+
+    if with_output_file:
+        tmpl_validation_schema['output_file'] = {
             'type': 'string',
             'minlength': len(scratch_path) + 2,
             'required': True,
             'validator': path_contains_scratch,
-        },
-    }
+        }
 
-    if (not validator.validate(params, validation_schema)):
+    if not validator.validate(params, tmpl_validation_schema):
         raise TypeError(_format_errors(validator.errors, params))
 
-    if ('template_data_json' in params):
-        params['template_data'] = json.loads(params['template_data_json'])
-        del params['template_data_json']
-    else:
-        params['template_data'] = {}
+    validated_tmpl_params = validator.document
 
-    return params
+    if 'template_data_json' in validated_tmpl_params:
+        validated_tmpl_params['template_data'] = json.loads(validated_tmpl_params['template_data_json'])
+        del validated_tmpl_params['template_data_json']
+    else:
+        validated_tmpl_params['template_data'] = {}
+
+    # merge the two sets of validated params
+    validated_params.update( validated_tmpl_params )
+
+    return validated_params
+
+
+def _require_only_one_html_input(params):
+    """
+    Ensure that there is only one HTML-type input
+
+    Note that there is nothing to stop users from submitting a report with both 'direct_html'
+    and 'direct_html_link_index' populated, even though the spec says it shouldn't be possible.
+
+    """
+
+    params_found = [p for p in ['template', 'direct_html', 'direct_html_link_index'] if p in params and params[p] is not None ]
+
+    if len(params_found) > 1:
+
+        # they got lucky!
+        if 'template' not in params_found:
+            return True
+
+        only_one = ['supply only one of "template", "direct_html", and "html_links"/"direct_html_link_index"']
+        err = {}
+        err = { p: only_one for p in params_found }
+        raise ValueError(_format_errors(err, params))
+
+    return True
 
 
 def _require_workspace_id_or_name(params):
@@ -166,6 +236,7 @@ def _require_workspace_id_or_name(params):
             'workspace_id': ['required without workspace_name']
         }
         raise TypeError(_format_errors(err, params))
+
     return params
 
 
@@ -206,7 +277,7 @@ def _format_errors(errors, params):
     return "".join([
         "KBaseReport parameter validation errors:\n",
         pprint.pformat(errors),
-        "Your parameters were:\n",
+        "\nYour parameters were:\n",
         pprint.pformat(params)
     ])
 

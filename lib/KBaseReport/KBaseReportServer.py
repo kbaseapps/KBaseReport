@@ -346,10 +346,10 @@ class Application(object):
                              name='KBaseReport.create_extended_report',
                              types=[dict])
         self.method_authentication['KBaseReport.create_extended_report'] = 'required'  # noqa
-        self.rpc_service.add(impl_KBaseReport.create_report_from_template,
-                             name='KBaseReport.create_report_from_template',
+        self.rpc_service.add(impl_KBaseReport.render_template,
+                             name='KBaseReport.render_template',
                              types=[dict])
-        self.method_authentication['KBaseReport.create_report_from_template'] = 'required'  # noqa
+        self.method_authentication['KBaseReport.render_template'] = 'required'  # noqa
         self.rpc_service.add(impl_KBaseReport.status,
                              name='KBaseReport.status',
                              types=[dict])
