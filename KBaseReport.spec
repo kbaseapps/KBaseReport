@@ -112,6 +112,10 @@ module KBaseReport {
      * Pass in *either* workspace_name or workspace_id -- only one is needed.
      * Note that workspace_id is preferred over workspace_name because workspace_id immutable.
      *
+     * Note that it is possible to pass both 'html_links'/'direct_html_link_index' and 'direct_html'
+     * as parameters for an extended report; in such cases, the file specified by the
+     * 'direct_html_link_links' parameter is used for the report and the 'direct_html' is ignored.
+     *
      * Required arguments:
      *     string workspace_name - Name of the workspace where the report
      *         should be saved. Required if workspace_id is absent

@@ -171,20 +171,22 @@ class KBaseReportTest(unittest.TestCase):
             self.getImpl().create_extended_report(self.getContext(), {'workspace_name': 123})
         self.assertTrue(str(err.exception))
 
+        html_links =  [
+            {
+                'name': 'index.html',
+                'path': self.a_html_path
+            },
+            {
+                'name': 'b',
+                'path': self.b_html_path
+            }
+        ]
+
         # require both 'html_links' and 'direct_html_link_index'
         with self.assertRaisesRegex(TypeError, "html_links.*?field 'direct_html_link_index' is required"):
             self.getImpl().create_extended_report(self.getContext(), {
                 'workspace_id': 12345,
-                'html_links': [
-                    {
-                        'name': 'index.html',
-                        'path': self.a_html_path
-                    },
-                    {
-                        'name': 'b',
-                        'path': self.b_html_path
-                    }
-                ],
+                'html_links': html_links,
             })
 
         with self.assertRaisesRegex(TypeError, "direct_html_link_index.*?field 'html_links' is required"):
@@ -193,7 +195,6 @@ class KBaseReportTest(unittest.TestCase):
                 'direct_html_link_index': 0,
             })
 
-
         # type error in the template params
         with self.assertRaisesRegex(TypeError, 'template.*?must be of dict type'):
             self.getImpl().create_extended_report(self.getContext(), {
@@ -201,33 +202,46 @@ class KBaseReportTest(unittest.TestCase):
                 'template': 'my_template_file.txt',
             })
 
-        # too many params
-        err_str = 'supply only one of "template", "direct_html", and '
-        with self.assertRaisesRegex(ValueError, err_str):
+        # no template + direct_html
+        err_str = 'KBaseReport parameter validation errors'
+        with self.assertRaisesRegex(TypeError, err_str) as cm:
             self.getImpl().create_extended_report(self.getContext(), {
                 'workspace_id': 12345,
                 'template': {},
                 'direct_html': 'This is not valid html',
             })
+        err = str(cm.exception)
+        self.assertRegex(err, "'template' must not be present with 'direct_html'")
+        self.assertRegex(err, "'template'.*?'direct_html', 'direct_html_link_index' must not be present")
 
-        with self.assertRaisesRegex(ValueError, err_str):
+        # no template + direct_html_link_index
+        with self.assertRaisesRegex(TypeError, err_str) as cm:
             self.getImpl().create_extended_report(self.getContext(), {
                 'workspace_id': 12345,
-                'template': {
-                    'this': 'that'
-                },
+                'template': { 'this': 'that' },
                 'direct_html_link_index': 0,
-                'html_links': [
-                    {
-                        'name': 'index.html',
-                        'path': self.a_html_path
-                    },
-                    {
-                        'name': 'b',
-                        'path': self.b_html_path
-                    }
-                ],
+                'html_links': html_links,
             })
+        err = str(cm.exception)
+        self.assertRegex(err, "'direct_html_link_index'.*?'template' must not be present with ")
+        self.assertRegex(err, "'template'.*?'direct_html', 'direct_html_link_index' must not be present")
+
+        # missing direct_html_link_index
+        # no direct_html + template
+        # no template + html_links
+        with self.assertRaisesRegex(TypeError, err_str) as cm:
+            self.getImpl().create_extended_report(self.getContext(), {
+                'workspace_id': 12345,
+                'template': { 'this': 'that' },
+                'direct_html': '<marquee>My fave HTML tag</marquee>',
+                'html_links': html_links,
+            })
+        err = str(cm.exception)
+        self.assertRegex(err, "'template' must not be present with 'html_links'")
+        self.assertRegex(err, "'direct_html'.*?'template' must not be present with ")
+        self.assertRegex(err, "template.*?'direct_html', 'direct_html_link_index' must not be present")
+        self.assertRegex(err, "field 'direct_html_link_index' is required")
+
 
 
     def test_invalid_file_links(self):
@@ -408,7 +422,6 @@ class KBaseReportTest(unittest.TestCase):
                 'template_file': TEST_DATA['template'],
                 'template_data_json': TEST_DATA['content_json'],
             },
-            'direct_html': None,
         })
         obj = self.dfu.get_objects({'object_refs': [result[0]['ref']]})
         direct_html = obj['data'][0]['data']['direct_html']
@@ -421,7 +434,6 @@ class KBaseReportTest(unittest.TestCase):
                 'template_file': TEST_DATA['template_file'],
                 'template_data_json': TEST_DATA['content_json'],
             },
-            'direct_html': None,
         })
         obj = self.dfu.get_objects({'object_refs': [result[0]['ref']]})
         direct_html = obj['data'][0]['data']['direct_html']

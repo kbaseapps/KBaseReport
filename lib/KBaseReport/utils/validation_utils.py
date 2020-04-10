@@ -62,6 +62,7 @@ def validate_extended_report_params(params):
             'type': 'list',
             'schema': extended_file_schema,
             'dependencies': 'direct_html_link_index',
+            'excludes': 'template',
         },
         'file_links': {
             'type': 'list',
@@ -75,13 +76,18 @@ def validate_extended_report_params(params):
             'min': 0,
             'nullable': True,
             'dependencies': 'html_links',
+            'excludes': 'template',
         },
-        'direct_html': {'type': 'string', 'nullable': True},
+        'direct_html': {
+            'type': 'string',
+            'nullable': True,
+            'excludes': 'template',
+        },
         'template': {
             'type': 'dict',
+            'excludes': ['direct_html', 'direct_html_link_index']
         },
     })
-    _require_only_one_html_input(params)
     _require_workspace_id_or_name(params)
     _validate_html_index(params.get('html_links', []), params.get('direct_html_link_index'))
 
@@ -198,31 +204,6 @@ def validate_template_params(params, config, with_output_file=False):
     validated_params.update( validated_tmpl_params )
 
     return validated_params
-
-
-def _require_only_one_html_input(params):
-    """
-    Ensure that there is only one HTML-type input
-
-    Note that there is nothing to stop users from submitting a report with both 'direct_html'
-    and 'direct_html_link_index' populated, even though the spec says it shouldn't be possible.
-
-    """
-
-    params_found = [p for p in ['template', 'direct_html', 'direct_html_link_index'] if p in params and params[p] is not None ]
-
-    if len(params_found) > 1:
-
-        # they got lucky!
-        if 'template' not in params_found:
-            return True
-
-        only_one = ['supply only one of "template", "direct_html", and "html_links"/"direct_html_link_index"']
-        err = {}
-        err = { p: only_one for p in params_found }
-        raise ValueError(_format_errors(err, params))
-
-    return True
 
 
 def _require_workspace_id_or_name(params):
