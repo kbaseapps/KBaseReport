@@ -3,3 +3,4 @@ test_local
 sdk.cfg
 lib/KBaseReport/*.bak*
 /.mypy_cache/
+KBaseReport.html

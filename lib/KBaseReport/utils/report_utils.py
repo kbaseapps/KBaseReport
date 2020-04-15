@@ -18,7 +18,8 @@ def create_report(params, dfu):
     workspace_id = _get_workspace_id(dfu, params)
     # Empty defaults for merging
     report_data = {
-        'objects_created': []
+        'objects_created': [],
+        'text_message': '',
     }
     report_data.update(params['report'])
     save_object_params = {
@@ -36,7 +37,7 @@ def create_report(params, dfu):
     return {'ref': ref, 'name': report_name}
 
 
-def create_extended(params, dfu):
+def create_extended(params, dfu, templater):
     """
     Create an extended report
     This will upload files to shock if you provide scratch paths instead of shock_ids
@@ -46,8 +47,8 @@ def create_extended(params, dfu):
     """
     file_links = params.get('file_links', [])
     html_links = params.get('html_links', [])
-    files = fetch_or_upload_file_links(dfu, file_links)  # see ./file_utils.py
-    html_files = fetch_or_upload_html_links(dfu, html_links)
+    files = fetch_or_upload_file_links(dfu, file_links, templater)  # see ./file_utils.py
+    html_files = fetch_or_upload_html_links(dfu, html_links, templater)
     report_data = {
         'text_message': params.get('message'),
         'file_links': files,

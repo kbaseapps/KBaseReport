@@ -6,12 +6,13 @@ import re
 import unittest
 
 from configparser import ConfigParser
+from template import Template
 from template.util import TemplateException
 from uuid import uuid4
 
 from KBaseReport.KBaseReportImpl import KBaseReport
-from KBaseReport.utils.template_utils import render_template_to_file, render_template_to_direct_html, _render_template
-from KBaseReport.utils.validation_utils import validate_template_params, _format_errors
+from KBaseReport.utils.TemplateUtil import TemplateUtil
+from KBaseReport.utils.validation_utils import validate_template_params
 
 
 def get_test_data():
@@ -22,8 +23,12 @@ def get_test_data():
     TEST_DATA = {
         'template_dir': TEMPLATE_DIR,
 
-        'title':    { 'page_title': 'My First Template' },
-        'content':  { 'value': ['this', 'that', 'the other'] },
+        'title': {
+            'page_title': 'My First Template'
+        },
+        'content': {
+            'value': ['this', 'that', 'the other']
+        },
 
         'template_file': 'views/test/test_template.tt',
         'scratch': '/kb/module/work/tmp',
@@ -41,7 +46,7 @@ def get_test_data():
     TEST_DATA['template'] = os.path.join(TEMPLATE_DIR, TEST_DATA['template_file'])
 
     TEST_DATA['output_file'] = os.path.join(TEST_DATA['scratch'], 'outfile.txt')
-    TEST_DATA['output_file_with_dirs'] = os.path.join(TEST_DATA['scratch'], 'path', 'to', 'outfile.txt')
+    TEST_DATA['output_file_with_dirs'] = os.path.join(TEST_DATA['scratch'], 'path', 'to', 'out.txt')
 
     # set up the rendering test ref data
     TEST_DATA['render_test'] = {}
@@ -54,7 +59,9 @@ def get_test_data():
 
         TEST_DATA['render_test'][type] = {
             'abs_path': rendered_text.rstrip(),
-            'rel_path': rendered_text.rstrip().replace(TEST_DATA['template'], TEST_DATA['template_file']),
+            'rel_path': rendered_text.rstrip().replace(
+                TEST_DATA['template'], TEST_DATA['template_file']
+            ),
         }
 
     return TEST_DATA
@@ -98,73 +105,88 @@ class TestTemplateUtils(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Fake the callback URL for local testing
-        with modified_environ(SDK_CALLBACK_URL='http://example.com'):
+        config_file = os.environ.get('KB_DEPLOYMENT_CONFIG', None)
+        cls.cfg = {}
+        cls.cfg_ttp = {}
+        if not config_file:
+            cls.cfg = {
+                'scratch': TEST_DATA['scratch'],
+                'template_toolkit': TEST_DATA['template_toolkit_config'],
+            }
+            cls.cfg_ttp = TEST_DATA['template_toolkit_config']
+        else:
+            config = ConfigParser()
+            config.read(config_file)
+            for nameval in config.items('KBaseReport'):
+                cls.cfg[nameval[0]] = nameval[1]
 
-            config_file = os.environ.get('KB_DEPLOYMENT_CONFIG', None)
-            cls.cfg = {}
-            cls.cfg_ttp = {}
-            if not config_file:
-                cls.cfg = {
-                    'scratch': TEST_DATA['scratch'],
-                    'template_toolkit': TEST_DATA['template_toolkit_config'],
-                }
-                cls.cfg_ttp = TEST_DATA['template_toolkit_config']
-            else:
-                config = ConfigParser()
-                config.read(config_file)
-                for nameval in config.items('KBaseReport'):
-                    cls.cfg[nameval[0]] = nameval[1]
+            for nameval in config.items('TemplateToolkitPython'):
+                cls.cfg_ttp[nameval[0]] = nameval[1]
 
-                for nameval in config.items('TemplateToolkitPython'):
-                    cls.cfg_ttp[nameval[0]] = nameval[1]
-
-            cls.scratch = cls.cfg['scratch']
-            cls.serviceImpl = KBaseReport(cls.cfg)
-
+        cls.scratch = cls.cfg['scratch']
+        cls.serviceImpl = KBaseReport(cls.cfg)
+        cls.templateUtil = TemplateUtil(cls.cfg)
 
     def getImpl(self):
         return self.__class__.serviceImpl
 
+    def getTmpl(self):
+        return self.__class__.templateUtil
 
     def get_input_set(self):
 
         input_set = [
             # config errors
-            {   'desc': 'no conf - fails on the lack of a required field',
+            {
+                'desc': 'no conf - fails on the lack of a required field',
                 'regex': 'scratch.*?required field',
                 'config': {},
             },
-            {   'desc': 'wrong format for tt params',
+            {
+                'desc': 'wrong format for tt params',
                 'regex': 'must be of dict type',
                 'config': {
-                    'template_toolkit': 'is a super cool templating library'
+                    'template_toolkit': 'is a super cool templating library',
+                }
+            },
+            {
+                'desc': 'invalid scratch dir',
+                'regex': 'scratch.*?does not exist on filesystem',
+                'config': {
+                    'scratch': '/does/not/exist',
                 }
             },
             #   input errors
-            {   'desc': 'missing required param',
+            {
+                'desc': 'missing required param',
                 'regex': "required field",
                 'params': {},
             },
-            {   'desc': 'template file is wrong type',
+            {
+                'desc': 'template file is wrong type',
                 'regex': "must be of string type",
                 'params': {
-                    'template_file': { 'path': '/does/not/exist' },
+                    'template_file': {
+                        'path': '/does/not/exist'
+                    },
                 }
             },
-            {   'desc': 'invalid JSON',
+            {
+                'desc': 'invalid JSON',
                 'regex': "Invalid JSON",
                 'params': {
                     'template_data_json': '"this is not valid JSON',
                 }
             },
-            {   'desc': 'invalid JSON',
+            {
+                'desc': 'invalid JSON',
                 'regex': "Invalid JSON",
                 'params': {
                     'template_data_json': '["this",{"is":"not"},{"valid":"json"]',
                 }
             },
-            {   'desc': 'output file is not in scratch dir',
+            {
+                'desc': 'output file is not in scratch dir',
                 'regex': "not in the scratch directory",
                 'params': {
                     'output_file': 'path/to/file',
@@ -192,7 +214,6 @@ class TestTemplateUtils(unittest.TestCase):
 
         return input_set
 
-
     def _title_check_rendering(self, string, has_title=False):
         no_title_compiled = re.compile('<title></title>')
         title_compiled = re.compile('<title>My First Template</title>')
@@ -204,14 +225,14 @@ class TestTemplateUtils(unittest.TestCase):
             self.assertNotRegex(string, title_compiled)
             self.assertRegex(string, no_title_compiled)
 
-
     def _content_check_rendering(self, string, has_content=False):
 
         test_text = re.compile('This is a test.')
 
         no_value_text = re.compile('<div>The value is </div>')
         value_text = re.compile(
-            '<div>The value is \[\s*[\"\']this[\"\'],\s*[\"\']that[\"\'],\s*[\"\']the other[\"\'],?\s*\]</div>')
+            r'<div>The value is \[\s*\'this\',\s*\'that\',\s*\'the other\',?\s*\]</div>'
+        )
 
         self.assertRegex(string, test_text)
 
@@ -222,7 +243,6 @@ class TestTemplateUtils(unittest.TestCase):
             self.assertRegex(string, no_value_text)
             self.assertNotRegex(string, value_text)
 
-
     def check_rendering(self, string, params={}):
 
         title_bool = 'title' in params
@@ -230,16 +250,50 @@ class TestTemplateUtils(unittest.TestCase):
         self._title_check_rendering(string, title_bool)
         self._content_check_rendering(string, content_bool)
 
+    def check_file_contents(self, new_file, ref_text):
 
-    def test_01_validate_template_params_errors(self):
-        """ test input validation errors """
+        with open(new_file, 'r') as f:
+            rendered_text = f.read()
+        self.assertMultiLineEqual(rendered_text.rstrip(), ref_text)
+
+    def test_class_init(self):
+        """ TemplateUtil: class initialisation """
+
+        # remove the local config variable: cannot init TTP
+        no_conf_err = 'No config file found. Cannot initialise Template Toolkit'
+        with modified_environ('KB_DEPLOYMENT_CONFIG'):
+            with self.assertRaisesRegex(ValueError, no_conf_err):
+                KBaseReport(self.cfg)
+
+        input_tests = self.get_input_set()
+        for test_item in input_tests:
+            if 'err_field' in test_item and 'config' in test_item['err_field'][0]:
+                # init the class directly to check config validation errors
+                with self.assertRaisesRegex(TypeError, test_item['regex']):
+                    TemplateUtil(test_item['config'])
+
+    def test_template_engine(self):
+        """ template engine initialisation """
+
+        tt_config = self.getImpl().config
+        tmpl_util = TemplateUtil(tt_config)
+        self.assertIsNone(tmpl_util._template)
+
+        # init the template engine
+        tmpl_engine = tmpl_util.template_engine()
+        self.assertIsInstance(tmpl_engine, Template)
+
+    def test_validate_template_params_errors(self):
+        """ test TemplateUtil input validation errors """
 
         # no scratch dir
-        with self.assertRaisesRegex(TypeError, 'scratch.*?required field'):
-            validate_template_params({ 'template_file': TEST_DATA['template'] }, {
+        with self.assertRaisesRegex(TypeError, "KBaseReport parameter validation errors:") as cm:
+            validate_template_params({'template_file': TEST_DATA['template']}, {
                 'this': 'that',
                 'the': 'other',
             }, True)
+        error_message = str(cm.exception)
+        self.assertRegex(error_message, 'scratch.*?required field')
 
         input_tests = self.get_input_set()
         for test_item in input_tests:
@@ -251,33 +305,28 @@ class TestTemplateUtils(unittest.TestCase):
                         test_item['params'], test_item['config'], True)
 
                 with self.assertRaisesRegex(TypeError, test_item['regex']):
-                    render_template_to_file(test_item['params'], test_item['config'])
+                    tmpl_util = TemplateUtil(test_item['config'])
+                    tmpl_util.render_template_to_file(test_item['params'])
 
                 # save to direct html -- no output file checks required
                 if 'err_field' in test_item and 'params.output_file' in test_item['err_field']:
                     # this should execute without errors
-                    validate_template_params(
-                        test_item['params'], test_item['config'], False)
+                    validate_template_params(test_item['params'], test_item['config'], False)
                 else:
                     with self.assertRaisesRegex(TypeError, test_item['regex']):
                         validate_template_params(
                             test_item['params'], test_item['config'], False)
 
                     with self.assertRaisesRegex(TypeError, test_item['regex']):
-                        render_template_to_direct_html(
-                            {'template': test_item['params']},
-                            test_item['config'])
+                        tmpl_util = TemplateUtil(test_item['config'])
+                        tmpl_util.render_template_to_direct_html({'template': test_item['params']})
 
-
-    def test_02_validate_template_params(self):
-        """ test input validation """
-
+    def test_validate_template_params(self):
+        """ test TemplateUtil input validation """
         expected = {
             'template_file': TEST_DATA['template'],
             'output_file': TEST_DATA['output_file'],
             'template_data': {},
-            'scratch': self.getImpl().config['scratch'],
-            'template_config': self.getImpl().config['template_toolkit'],
         }
 
         # with output file
@@ -285,7 +334,7 @@ class TestTemplateUtils(unittest.TestCase):
             validate_template_params({
                 'template_file': TEST_DATA['template'],
                 'output_file': TEST_DATA['output_file'],
-            }, self.getImpl().config, True),
+            }, self.getTmpl().config, True),
             expected
         )
 
@@ -296,7 +345,7 @@ class TestTemplateUtils(unittest.TestCase):
                 'template_file': TEST_DATA['template'],
                 'template_data_json': TEST_DATA['content_json'],
                 'output_file': TEST_DATA['output_file'],
-            }, self.getImpl().config, True),
+            }, self.getTmpl().config, True),
             expected
         )
 
@@ -307,29 +356,11 @@ class TestTemplateUtils(unittest.TestCase):
             validate_template_params({
                 'template_file': TEST_DATA['template'],
                 'output_file': TEST_DATA['output_file'],
-            }, self.getImpl().config, False),
+            }, self.getTmpl().config, False),
             expected
         )
 
-        # no template toolkit conf provided
-        # template content translated
-        # output file param ignored
-        self.assertEqual(
-            validate_template_params({
-                'template_file': TEST_DATA['template'],
-                'template_data_json': TEST_DATA['content_json'],
-                'output_file': TEST_DATA['output_file'],
-            }, { 'scratch': self.getImpl().config['scratch'] }),
-            {
-                'template_file': TEST_DATA['template'],
-                'template_data': TEST_DATA['content'],
-                'scratch': self.getImpl().config['scratch'],
-                'template_config': {},
-            }
-        )
-
-
-    def test_03_render_template(self):
+    def test_render_template(self):
         """
         basic rendering test
 
@@ -337,86 +368,85 @@ class TestTemplateUtils(unittest.TestCase):
         _render_template(template_file, template_data={}, template_config={}):
 
         """
-
         render_test = TEST_DATA['render_test']
+        tmpl_util = self.getTmpl()
 
-        template_config = self.getImpl().config['template_toolkit']
-
-        with self.assertRaisesRegex(TemplateException, 'file error - /does/not/exist: not found'):
-            _render_template('/does/not/exist', template_config=template_config)
-
-        with self.assertRaisesRegex(TemplateException, 'file error - file/does/not/exist: not found'):
-            _render_template('file/does/not/exist', template_config=template_config)
+        # template not found
+        for path in ['/does/not/exist', 'does/not/exist']:
+            with self.assertRaisesRegex(TemplateException, 'file error - ' + path + ': not found'):
+                tmpl_util._render_template(path)
 
         for test_item in render_test.keys():
             desc = test_item if test_item is not None else 'None'
             with self.subTest('rendered content: ' + desc):
                 if not test_item:
                     # no title or content specified
-                    tmpl_str = _render_template(TEST_DATA['template'], template_config=template_config)
+                    tmpl_str = tmpl_util._render_template(TEST_DATA['template'])
                     self.check_rendering(tmpl_str)
                     self.assertEqual(tmpl_str.rstrip(), render_test[test_item]['abs_path'])
 
                 elif test_item == 'title' or test_item == 'content':
-                    tmpl_str = _render_template(TEST_DATA['template'], TEST_DATA[test_item], template_config)
-                    self.check_rendering(tmpl_str, { test_item: True })
+                    tmpl_str = tmpl_util._render_template(
+                        TEST_DATA['template'], TEST_DATA[test_item]
+                    )
+                    self.check_rendering(tmpl_str, {test_item: True})
                     self.assertEqual(tmpl_str.rstrip(), render_test[test_item]['abs_path'])
 
         # check whether we can use a relative path for a template
-        relative_tmpl_str = _render_template(TEST_DATA['template_file'], {}, template_config)
+        relative_tmpl_str = tmpl_util._render_template(TEST_DATA['template_file'], {})
         self.check_rendering(relative_tmpl_str)
         self.assertEqual(relative_tmpl_str.rstrip(), render_test[None]['rel_path'])
 
-
-    def test_04_render_template_to_direct_html(self):
-
+    def test_render_template_to_direct_html(self):
         """ test rendering and saving output to the 'direct_html' param """
         render_test = TEST_DATA['render_test']
+        tmpl_util = self.getTmpl()
 
         # see test_validate_template_params for more validation errors
         with self.assertRaisesRegex(KeyError, 'template.*?required field'):
-            render_template_to_direct_html({
+            tmpl_util.render_template_to_direct_html({
                 'template_file': TEST_DATA['template'],
                 'template_data_json': TEST_DATA['content_json']
-            }, self.getImpl().config)
+            })
 
         # template not found
-        with self.assertRaisesRegex(TemplateException, 'file error - /does/not/exist: not found'):
-            render_template_to_direct_html(
-                { 'template': { 'template_file': '/does/not/exist' } },
-                self.getImpl().config,
-            )
+        for path in ['/does/not/exist', 'does/not/exist']:
+            with self.assertRaisesRegex(TemplateException, 'file error - ' + path + ': not found'):
+                tmpl_util.render_template_to_direct_html({'template': {'template_file': path}})
 
         for test_item in render_test.keys():
             desc = test_item if test_item is not None else 'None'
             with self.subTest('rendered content: ' + desc):
-                test_args = { 'template_file': TEST_DATA['template'] }
+                test_args = {'template_file': TEST_DATA['template']}
 
                 if test_item:
                     test_args['template_data_json'] = TEST_DATA[test_item + '_json']
 
-                new_params = render_template_to_direct_html({ 'template': test_args }, self.getImpl().config)
-                direct_html_str = new_params['direct_html']
-                self.assertMultiLineEqual(direct_html_str.rstrip(), render_test[test_item]['abs_path'])
-                self.assertTrue('template' not in new_params)
+                new_params = tmpl_util.render_template_to_direct_html({'template': test_args})
 
-    def test_05_render_template_to_file(self):
-        """ test rendering and saving to a file """
+                expected = render_test[test_item]['abs_path']
+                direct_html_str = new_params['direct_html']
+                self.assertMultiLineEqual(direct_html_str.rstrip(), expected)
+                self.assertNotIn('template', new_params)
+
+    def test_render_template_to_file(self):
+        """ test rendering and saving to a (scratch) file """
+
+        tmpl_util = self.getTmpl()
 
         # see test_validate_template_params_errors for more validation errors
-        # template not found
-        with self.assertRaisesRegex(TemplateException, 'file error - /does/not/exist: not found'):
-            render_template_to_file(
-                { 'template_file': '/does/not/exist', 'output_file': TEST_DATA['output_file'] },
-                self.getImpl().config,
-            )
+        # template not found, absolute and relative paths
+        for path in ['/does/not/exist', 'does/not/exist']:
+            with self.assertRaisesRegex(TemplateException, 'file error - ' + path + ': not found'):
+                tmpl_util.render_template_to_file({
+                    'template_file': path,
+                    'output_file': TEST_DATA['output_file']
+                })
 
-        # template not found, relative path
-        with self.assertRaisesRegex(TemplateException, 'file error - does/not/exist: not found'):
-            render_template_to_file(
-                { 'template_file': 'does/not/exist', 'output_file': TEST_DATA['output_file'] },
-                self.getImpl().config,
-            )
+            with self.assertRaisesRegex(TemplateException, 'file error - ' + path + ': not found'):
+                tmpl_util.render_template_to_scratch_file({
+                    'template_file': path
+                })
 
         # ensure that we can create intervening directories
         output_dir = os.path.join(self.scratch, 'path', 'to', 'new', 'dir')
@@ -437,32 +467,37 @@ class TestTemplateUtils(unittest.TestCase):
                 if test_item:
                     test_args['template_data_json'] = TEST_DATA[test_item + '_json']
 
-                new_file = render_template_to_file(test_args, self.getImpl().config)
+                new_file = tmpl_util.render_template_to_file(test_args)
+                self.assertEqual(new_file, {'path': output_file})
+                self.check_file_contents(
+                    new_file['path'], TEST_DATA['render_test'][test_item]['abs_path'])
 
-                self.assertEqual(new_file, { 'path': output_file })
+                # now render these to a temp file instead
+                del test_args['output_file']
+                tmp_file = tmpl_util.render_template_to_scratch_file(test_args)
+                # make sure the file name matches expectations
+                self.assertRegex(tmp_file['path'], self.cfg['scratch'] + ".*?.txt$")
+                self.check_file_contents(
+                    tmp_file['path'], TEST_DATA['render_test'][test_item]['abs_path'])
 
-                with open(new_file['path'], 'r') as f:
-                    rendered_text = f.read()
-                self.assertEqual(rendered_text.rstrip(), TEST_DATA['render_test'][test_item]['abs_path'])
-
-
-    def test_06_impl_render_template(self):
-        """ full Impl test: input validation, rendering, saving to file, return """
-
-        self.assertEqual('http://example.com', self.getImpl().callback_url)
-
+    def test_impl_render_template_errors(self):
+        """ full Impl test errors """
         input_tests = self.get_input_set()
-
-        impl = self.getImpl()
-
-        # error checks
         for test_item in input_tests:
             with self.subTest(test_item['desc']):
-                with self.assertRaisesRegex(TypeError, test_item['regex']):
-                    impl.config = test_item['config']
-                    impl.render_template({}, test_item['params'])
+                if 'err_field' in test_item:
+                    if 'config.template_toolkit' in test_item['err_field'][0]:
+                        # this will pass as the TT config gets read (and overwritten) in KBaseReport
+                        kbr = KBaseReport(test_item['config'])
+                        kbr.render_template({}, test_item['params'])
 
-        impl.config = self.cfg
+                    else:
+                        with self.assertRaisesRegex(TypeError, test_item['regex']):
+                            kbr = KBaseReport(test_item['config'])
+                            kbr.render_template({}, test_item['params'])
+
+    def test_impl_render_template(self):
+        """ full Impl test: input validation, rendering, saving to file, return """
 
         for test_item in TEST_DATA['render_test'].keys():
             desc = test_item if test_item is not None else 'none'
@@ -477,24 +512,15 @@ class TestTemplateUtils(unittest.TestCase):
                     test_args['template_data_json'] = TEST_DATA[test_item + '_json']
 
                 impl_output = self.getImpl().render_template({}, test_args)
-                self.assertEqual(impl_output, [{ 'path': test_args['output_file'] }])
-
-                new_file = impl_output[0]['path']
-                with open(new_file, 'r') as f:
-                    rendered_text = f.read()
-                self.assertEqual(rendered_text.rstrip(), ref_text['abs_path'])
+                self.assertEqual(impl_output, [{'path': test_args['output_file']}])
+                self.check_file_contents(impl_output[0]['path'], ref_text['abs_path'])
 
                 # use a relative path instead of the absolute
                 test_args['template_file'] = TEST_DATA['template_file']
                 test_args['output_file'] = test_args['output_file'] + '-2'
                 impl_output_rel_template = self.getImpl().render_template({}, test_args)
-                self.assertEqual(impl_output_rel_template, [{ 'path': test_args['output_file'] }])
-
-                new_rel_file = impl_output_rel_template[0]['path']
-                with open(new_rel_file, 'r') as f:
-                    rendered_text_rel = f.read()
-
-                self.assertEqual(rendered_text_rel.rstrip(), ref_text['rel_path'])
+                self.assertEqual(impl_output_rel_template, [{'path': test_args['output_file']}])
+                self.check_file_contents(impl_output_rel_template[0]['path'], ref_text['rel_path'])
 
             # clean up
 

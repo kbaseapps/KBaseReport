@@ -5,8 +5,6 @@ import pprint
 from json import JSONDecodeError
 import json
 
-pp = pprint.PrettyPrinter(indent=4)
-
 """
 Utilities for validating parameters
 We use the `cerberus` schema validation library: http://docs.python-cerberus.org
@@ -22,7 +20,10 @@ def validate_simple_report_params(params):
             'type': 'dict',
             'required': True,
             'schema': {
-                'text_message': {'type': 'string', 'nullable': True},
+                'text_message': {
+                    'type': 'string',
+                    'nullable': True
+                },
                 'warnings': {
                     'type': 'list',
                     'schema': {'type': 'string'}
@@ -33,8 +34,13 @@ def validate_simple_report_params(params):
                 },
                 'direct_html': {
                     'type': 'string',
-                    'nullable': True
-                }
+                    'nullable': True,
+                },
+                'template': {
+                    'type': 'dict',
+                    'excludes': 'direct_html',
+                    'schema': template_schema,
+                },
             }
         }
     })
@@ -85,7 +91,8 @@ def validate_extended_report_params(params):
         },
         'template': {
             'type': 'dict',
-            'excludes': ['direct_html', 'direct_html_link_index']
+            'excludes': ['direct_html', 'direct_html_link_index'],
+            'schema': template_schema,
         },
     })
     _require_workspace_id_or_name(params)
@@ -112,24 +119,6 @@ def validate_files(files):
             raise ValueError(_format_errors(err, f))
 
 
-def valid_dir_path(field, dir_path, error):
-    """ ensure a directory exists """
-    if (not os.path.isdir(dir_path)):
-        error(field, 'does not exist on filesystem')
-
-def valid_file_path(field, file_path, error):
-    """ ensure a file exists """
-    if (not os.path.isfile(file_path)):
-        error(field, 'does not exist on filesystem')
-
-
-def valid_json(field, string, error):
-    try:
-        template_data = json.loads(string)
-    except JSONDecodeError as err:
-        error(field, 'Invalid JSON: ' + err.msg + ' ' + str(err.pos))
-
-
 def validate_template_params(params, config, with_output_file=False):
     """ Validate all parameters to KBaseReportImpl#render_template
 
@@ -140,34 +129,17 @@ def validate_template_params(params, config, with_output_file=False):
     :return:
     params (dict) - validated params
     """
-    validator = Validator(purge_unknown = True)
 
-    config_validation_schema = {
-        'scratch': {
-            'type': 'string',
-            'minlength': 2,
-            'required': True,
-            'validator': valid_dir_path,
-        },
-        'template_toolkit': {
-            'type': 'dict',
-        }
-    }
+    # ensure that the supplied config has the required values
+    validated_config = validate_template_util_config(config)
 
-    if not validator.validate(config, config_validation_schema):
-        raise TypeError(_format_errors(validator.errors, config))
-
-    validated_params = {
-        'scratch': config['scratch'],
-        'template_config': config['template_toolkit'] if 'template_toolkit' in config else {}
-    }
-
-    scratch_path = config['scratch']
+    scratch_path = validated_config['scratch']
 
     def path_contains_scratch(field, file_path, error):
-
         if file_path.find(scratch_path) != 0:
             error(field, 'is not in the scratch directory')
+
+    validator = Validator(purge_unknown=True)
 
     tmpl_validation_schema = {
         'template_file': {
@@ -192,18 +164,69 @@ def validate_template_params(params, config, with_output_file=False):
     if not validator.validate(params, tmpl_validation_schema):
         raise TypeError(_format_errors(validator.errors, params))
 
-    validated_tmpl_params = validator.document
+    validated_params = validator.document
 
-    if 'template_data_json' in validated_tmpl_params:
-        validated_tmpl_params['template_data'] = json.loads(validated_tmpl_params['template_data_json'])
-        del validated_tmpl_params['template_data_json']
+    if 'template_data_json' in validated_params:
+        validated_params['template_data'] = json.loads(validated_params['template_data_json'])
+        del validated_params['template_data_json']
     else:
-        validated_tmpl_params['template_data'] = {}
-
-    # merge the two sets of validated params
-    validated_params.update( validated_tmpl_params )
+        validated_params['template_data'] = {}
 
     return validated_params
+
+
+def validate_template_util_config(config):
+    """ Ensure that TemplateUtil has the necessary config parameters
+
+    :param config:  (dict)  app config with required keys 'scratch' and 'template_toolkit'
+
+    :return:
+    params (dict) - validated params
+    """
+    validator = Validator(allow_unknown=True)
+
+    config_validation_schema = {
+        'scratch': {
+            'type': 'string',
+            'minlength': 2,
+            'required': True,
+            'validator': valid_dir_path,
+        },
+        'template_toolkit': {
+            'type': 'dict',
+            'required': True,
+        }
+    }
+    if not validator.validate(config, config_validation_schema):
+        raise TypeError(_format_errors(validator.errors, config))
+
+    return validator.document
+
+
+def valid_dir_path(field, dir_path, error):
+    """ ensure a directory exists """
+    if not os.path.isdir(dir_path):
+        error(field, 'does not exist on filesystem')
+    return True
+
+
+def valid_file_path(field, file_path, error):
+    """ ensure a file exists """
+    if not os.path.isfile(file_path):
+        error(field, 'does not exist on filesystem')
+    return True
+
+
+def valid_file_or_dir(field, path, error):
+    if not os.path.isfile(path) and not os.path.isdir(path):
+        error(field, 'does not exist on filesystem')
+
+
+def valid_json(field, string, error):
+    try:
+        json.loads(string)
+    except JSONDecodeError as err:
+        error(field, 'Invalid JSON: ' + err.msg + ' ' + str(err.pos))
 
 
 def _require_workspace_id_or_name(params):
@@ -252,14 +275,17 @@ def _validate_html_index(html_links, index):
         ]))
 
 
+pp = pprint.PrettyPrinter(indent=2, width=100)
+
+
 def _format_errors(errors, params):
     """ Make human-readable error messages from a cerberus validation instance """
     # Create a bulleted list of each cerberus error message
     return "".join([
         "KBaseReport parameter validation errors:\n",
-        pprint.pformat(errors),
+        pp.pformat(errors),
         "\nYour parameters were:\n",
-        pprint.pformat(params)
+        pp.pformat(params)
     ])
 
 
@@ -286,14 +312,52 @@ linked_file_schema = {
     }
 }
 
+# Template + template data validation
+template_schema = {
+    'template_file': {
+        'type': 'string',
+        'minlength': 3,
+        'required': True,
+    },
+    'template_data_json': {
+        'type': 'string',
+        'validator': valid_json,
+    },
+}
+
 # Type validation for the extended report's File (see KIDL spec)
 extended_file_schema = {
     'type': 'dict',
     'schema': {
-        'name': {'type': 'string', 'nullable': True},
-        'shock_id': {'type': 'string', 'nullable': True},
-        'path': {'type': 'string', 'nullable': True},
-        'description': {'type': 'string', 'nullable': True},
-        'label': {'type': 'string', 'nullable': True}
+        'name': {
+            'type': 'string',
+            'required': True,
+            'minlength': 1,
+        },
+        'shock_id': {
+            'type': 'string',
+            'excludes': ['path', 'template'],
+            'required': True,
+        },
+        'path': {
+            'type': 'string',
+            'excludes': ['shock_id', 'template'],
+            'required': True,
+            'validator': valid_file_or_dir,
+        },
+        'template': {
+            'type': 'dict',
+            'excludes': ['path', 'shock_id'],
+            'required': True,
+            'schema': template_schema,
+        },
+        'description': {
+            'type': 'string',
+            'nullable': True,
+        },
+        'label': {
+            'type': 'string',
+            'nullable': True,
+        },
     }
 }
