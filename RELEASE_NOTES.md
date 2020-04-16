@@ -1,5 +1,9 @@
 KBaseReport Release Notes
-=========================================
+=========================
+
+3.1.0
+-----
+- Added in a 'render_template' endpoint for rendering templates, and added a 'template' option to the extended report to allow app developers to submit template data and a template file instead of rendering the template themselves.
 
 3.0.5
 -----

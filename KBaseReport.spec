@@ -9,6 +9,16 @@ module KBaseReport {
     typedef string ws_id;
 
     /*
+     * Structure representing a template to be rendered. 'template_file' must be provided,
+     * 'template_data_json' is optional
+     */
+
+    typedef structure {
+        string template_file;
+        string template_data_json;
+    } TemplateParams;
+
+    /*
      * Represents a Workspace object with some brief description text
      * that can be associated with the object.
      * Required arguments:
@@ -27,6 +37,8 @@ module KBaseReport {
      * Optional arguments:
      *     string text_message - Readable plain-text report message
      *     string direct_html - Simple HTML text that will be rendered within the report widget
+     *     TemplateParams template - a template file and template data to be rendered and displayed
+     *         as HTML. Use in place of 'direct_html'
      *     list<string> warnings - A list of plain-text warning messages
      *     list<WorkspaceObject> objects_created - List of result workspace objects that this app
      *         has created. They will get linked in the report view
@@ -34,6 +46,7 @@ module KBaseReport {
     typedef structure {
         string text_message;
         string direct_html;
+        TemplateParams template;
         list<string> warnings;
         list<WorkspaceObject> objects_created;
     } SimpleReport;
@@ -42,7 +55,8 @@ module KBaseReport {
      * Parameters for the create() method
      *
      * Pass in *either* workspace_name or workspace_id -- only one is needed.
-     * Note that workspace_id is preferred over workspace_name because workspace_id immutable.
+     * Note that workspace_id is preferred over workspace_name because workspace_id immutable. If
+     * both are provided, the workspace_id will be used.
      *
      * Required arguments:
      *     SimpleReport report - See the structure above
@@ -85,9 +99,11 @@ module KBaseReport {
      * path. If a path to a file is given, then the file will be uploaded. If a
      * path to a directory is given, then it will be zipped and uploaded.
      * Required arguments:
-     *     string path - Can be a file or directory path. Required if shock_id is absent
-     *     string shock_id - Shock node ID. Required if path is absent
      *     string name - Plain-text filename (eg. "results.zip") -- shown to the user
+     *  One of the following identifiers is required:
+     *     string path - Can be a file or directory path.
+     *     string shock_id - Shock node ID.
+     *     TemplateParams template - template to be rendered and saved as a file.
      * Optional arguments:
      *     string label - A short description for the file (eg. "Filter results")
      *     string description - A more detailed, human-readable description of the file
@@ -95,6 +111,7 @@ module KBaseReport {
     typedef structure {
         string path;
         string shock_id;
+        TemplateParams template;
         string name;
         string label;
         string description;
@@ -106,6 +123,10 @@ module KBaseReport {
      * Pass in *either* workspace_name or workspace_id -- only one is needed.
      * Note that workspace_id is preferred over workspace_name because workspace_id immutable.
      *
+     * Note that it is possible to pass both 'html_links'/'direct_html_link_index' and 'direct_html'
+     * as parameters for an extended report; in such cases, the file specified by the
+     * 'direct_html_link_links' parameter is used for the report and the 'direct_html' is ignored.
+     *
      * Required arguments:
      *     string workspace_name - Name of the workspace where the report
      *         should be saved. Required if workspace_id is absent
@@ -116,15 +137,20 @@ module KBaseReport {
      *     list<WorkspaceObject> objects_created - List of result workspace objects that this app
      *         has created. They will be linked in the report view
      *     list<string> warnings - A list of plain-text warning messages
-     *     list<File> html_links - A list of paths or shock IDs pointing to HTML files or directories.
+     *     string direct_html - Simple HTML text content to be rendered within the report widget.
+     *         Set only one of 'direct_html', 'template', and 'html_links'/'direct_html_link_index'.
+     *         Setting both 'template' and 'direct_html' will generate an error.
+     *     TemplateParams template - render a template to produce HTML text content that will be
+     *         rendered within the report widget. Setting 'template' and 'direct_html' or
+     *         'html_links'/'direct_html_link_index' will generate an error.
+     *     list<File> html_links - A list of paths, shock IDs, or template specs pointing to HTML files or directories.
      *         If you pass in paths to directories, they will be zipped and uploaded
-     *     int direct_html_link_index - Index in html_links to set the direct/default view in the
-     *         report. Set either direct_html_link_index or direct_html, but not both
-     *     string direct_html - Simple HTML text content that will be rendered within the report
-     *         widget. Set either direct_html or direct_html_link_index, but not both
-     *     list<File> file_links - A list of file paths or shock node IDs. Allows the user to
-     *         specify files that the report widget should link for download. If you pass in paths
-     *         to directories, they will be zipped
+     *     int direct_html_link_index - Index in html_links to set the direct/default view in the report.
+     *         Set only one of 'direct_html', 'template', and 'html_links'/'direct_html_link_index'.
+     *         Setting both 'template' and 'html_links'/'direct_html_link_index' will generate an error.
+     *     list<File> file_links - Allows the user to specify files that the report widget
+     *         should link for download. If you pass in paths to directories, they will be zipped.
+     *         Each entry should be a path, shock ID, or template specification.
      *     string report_object_name - Name to use for the report object (will
      *         be auto-generated if unspecified)
      *     html_window_height - Fixed height in pixels of the HTML window for the report
@@ -135,6 +161,7 @@ module KBaseReport {
         list<WorkspaceObject> objects_created;
         list<string> warnings;
         list<File> html_links;
+        TemplateParams template;
         string direct_html;
         int direct_html_link_index;
         list<File> file_links;
@@ -151,4 +178,42 @@ module KBaseReport {
      */
     funcdef create_extended_report(CreateExtendedReportParams params)
         returns (ReportInfo info) authentication required;
+
+
+    /*
+     * Render a template using the supplied data, saving the results to an output
+     * file in the scratch directory.
+     *
+     * Required arguments:
+     *     string template_file  -  Path to the template file to be rendered.
+     *     string output_file    -  Path to the file where the rendered template
+     *                              should be saved. Must be in the scratch directory.
+     * Optional:
+     *     string template_data_json -  Data for rendering in the template.
+     */
+
+    typedef structure {
+        string template_file;
+        string output_file;
+        string template_data_json;
+    } RenderTemplateParams;
+
+    /*
+     * Render a file from a template. This method takes a template file and
+     * a data structure, renders the template, and saves the results to a file.
+     * It returns the output file path in the form
+     * { 'path': '/path/to/file' }
+     *
+     * To ensure that the template and the output file are accessible to both
+     * the KBaseReport service and the app requesting the template rendering, the
+     * template file should be copied into the shared `scratch` directory and the
+     * output_file location should also be in `scratch`.
+     *
+     * See https://github.com/kbaseIncubator/kbase_report_templates for sample
+     * page templates, standard includes, and instructions on creating your own
+     * templates.
+     */
+    funcdef render_template(RenderTemplateParams params)
+        returns (File output_file_path) authentication required;
+
 };

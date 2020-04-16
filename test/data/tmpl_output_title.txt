@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>My First Template</title>
+</head>
+<body>
+<div class="container-fluid kb-html-report">
+<!-- /kb/module/kbase_report_templates/views/test/test_template.tt -->
+<h1>My First Template</h1>
+<div>This is a test.</div>
+<div>The value is </div>
+
+</div>
+</body>
+</html>
