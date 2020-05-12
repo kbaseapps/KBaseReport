@@ -32,6 +32,7 @@ Use the method **`report_client.create_extended_report(params)`** to create a re
 * `workspace_id`: (optional integer) id of your workspace. Preferred over `workspace_name` as it's immutable. Required if `workspace_name` is absent.
 * `workspace_name`: (optional string) string name of your workspace. Requried if `workspace_id` is absent.
 * `direct_html`: (optional string) raw HTML to show in the report
+* `template`: (optional dictionary) a dictionary in the form `{'template_file': '/path/to/tmpl', 'template_data_json': "json_data_structure"}` specifying the location of a template file and the data to be rendered in the template. For more information, please see the [KBase Templates Repo](https://github.com/kbaseIncubator/kbase_report_templates).
 * `objects_created`: (optional list of WorkspaceObject) data objects that were created as a result of running your app, such as assemblies or genomes
 * `warnings`: (optional list of strings) any warnings messages generated from running the app
 * `file_links`: (optional list of dicts) files to attach to the report (see the valid key/vals below)
@@ -59,10 +60,13 @@ The `file_links` and `html_links` params can have the following keys:
 * `path`: (required string) Full file path for a file (in scratch). Not required if `shock_id` is present.
 * `name`: (required string) name of the file
 * `description`: (optional string) Readable description of the file
+* `template`: (optional dictionary) A dictionary with keys `template_file` (required) and `template_data_json` (optional), specifying a template and accompanying data to be rendered to generate an output file.
 
 For the `path` parameter, this can either point to a single file or a directory. If it points to a directory, then it will be zipped and uploaded for you.
 
 If you pass in a directory as your `path` for HTML reports, you can include additional files in that directory, such as images or PDFs. You can link to those files from your main HTML page by using relative links.
+
+For more information on using templates, please see the [KBase Templates Repo](https://github.com/kbaseIncubator/kbase_report_templates).
 
 > Important: Be sure to set the name of your main HTML file (eg. `index.html`) to the `'name'` key in your `html_links` dictionary.
 
