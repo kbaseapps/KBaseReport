@@ -103,22 +103,6 @@ def validate_extended_report_params(params):
     return params
 
 
-def validate_files(files):
-    """
-    Validate that every entry in `files` contains either a "shock_id" or "path"
-    Raise an exception if any `path` value in `files` does not exist on the disk
-    """
-    def file_or_dir(path):
-        return os.path.isfile(path) or os.path.isdir(path)
-    for f in files:
-        if ('path' not in f) and ('shock_id' not in f):
-            err = {'path': ['required without shock_id'], 'shock_id': ['required without path']}
-            raise TypeError(_format_errors(err, f))
-        if ('path' in f) and (not file_or_dir(f['path'])):
-            err = {'path': ['does not exist on filesystem']}
-            raise ValueError(_format_errors(err, f))
-
-
 def validate_template_params(params, config, with_output_file=False):
     """ Validate all parameters to KBaseReportImpl#render_template
 

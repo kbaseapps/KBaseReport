@@ -62,6 +62,34 @@ class TemplateUtil:
         del params['template']
         return params
 
+    def render_template_list_to_files(self, param_list):
+        """ Render a list of templates, saving the contents to the specified output files
+
+        :param param_list:  (list)  list of dicts of the form
+
+            template_file:      # the template file to render
+            template_data:      # data to be rendered in the template (optional)
+            output_file:        # path to a file where the output will be written
+
+        :return:
+        [{ 'path': '/path/to/output_file' }, { 'path': '/path/to_file_2' }, ... ]
+
+        """
+
+        # check for any identical output_file paths
+        output_file_set = set()
+        for p in param_list:
+            if 'output_file' in p:
+                if p['output_file'] in output_file_set:
+                    raise ValueError(_format_errors(
+                            {'output_file': ['output_file paths must be unique']},
+                            param_list
+                        ))
+                else:
+                    output_file_set.add(p['output_file'])
+
+        return [self.render_template_to_file(_) for _ in param_list]
+
     def render_template_to_file(self, params):
         """ Render a template and save the resulting content to a file
 

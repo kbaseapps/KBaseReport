@@ -216,4 +216,15 @@ module KBaseReport {
     funcdef render_template(RenderTemplateParams params)
         returns (File output_file_path) authentication required;
 
+    /*
+     * Render files from a list of template specifications. Input is a list of dicts
+     * with the keys 'template_file', 'output_file', and 'template_data_json', and output
+     * is a list of dicts containing the path of the rendered files, returned in the order
+     * that the input was specified. All 'output_file' paths must be unique.
+     *
+     * If any template fails to render, the endpoint will return an error.
+     */
+    funcdef render_templates(list<RenderTemplateParams> params)
+        returns (list<File> output_paths) authentication required;
+
 };

@@ -85,3 +85,36 @@ report = report_client.create_extended_report({
     'workspace_name': workspace_name
 })
 ```
+
+### Rendering a template
+
+The KBaseReport app can also be used for rendering one or multiple templates, written in [Template Toolkit](https://github.com/lmr/Template-Toolkit-Python) syntax. Please see the [KBase Templates Repo](https://github.com/kbaseIncubator/kbase_report_templates) for more information and for examples of existing KBase templates.
+
+```py
+
+# render a single template
+# output is in the form {'path': '/path/to/outfile'}
+
+output_file_data = report_client.render_template({
+    'template_file': os.path.join(scratch_dir, 'templates', 'index.tt'),
+    'output_file':  os.path.join(scratch_dir, 'html', 'index.html'),
+    'template_data_json': json.dumps({'this': 'that', 'the': 'other'}),
+})[0]
+
+# render a list of templates
+# output is in the form [{'path': '/path/to/outfile'}, {'path': '/path/to/file_2'}, ... ]
+
+more_output_files = report_client.render_templates([
+    {
+        'template_file': os.path.join(scratch_dir, 'templates', 'gene_info.tt',
+        'output_file': os.path.join(scratch_dir, 'html', gene_data['gene_name'] + '.html',
+        'template_data_json': json.dumps(gene_data),
+    },
+    {
+        'template_file': os.path.join(scratch_dir, 'templates', 'protein_info.tt',
+        'output_file': os.path.join(scratch_dir, 'html', 'proteins.html',
+        'template_data_json': json.dumps(protein_data),
+
+    },
+}])[0]
+```
