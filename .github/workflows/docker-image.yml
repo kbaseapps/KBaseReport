@@ -1,8 +1,6 @@
 name: Docker CI
 
-on:
-  push:
-    branches: [ template_render, master ]
+on: [push, pull_request]
 
 jobs:
   install_kbsdk_and_test:

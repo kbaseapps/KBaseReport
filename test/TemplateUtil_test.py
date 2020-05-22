@@ -496,6 +496,10 @@ class TestTemplateUtils(unittest.TestCase):
                             kbr = KBaseReport(test_item['config'])
                             kbr.render_template({}, test_item['params'])
 
+                        with self.assertRaisesRegex(TypeError, test_item['regex']):
+                            kbr = KBaseReport(test_item['config'])
+                            kbr.render_templates({}, [test_item['params']])
+
     def test_impl_render_template(self):
         """ full Impl test: input validation, rendering, saving to file, return """
 
@@ -522,7 +526,49 @@ class TestTemplateUtils(unittest.TestCase):
                 self.assertEqual(impl_output_rel_template, [{'path': test_args['output_file']}])
                 self.check_file_contents(impl_output_rel_template[0]['path'], ref_text['rel_path'])
 
-            # clean up
+    def test_impl_render_templates_multi_file_errors(self):
+        """ full Impl test, multiple templates, errors """
+
+        # name collision in output file names
+        args_list = [{
+            'template_file': TEST_DATA['template'],
+            'output_file': os.path.join(self.scratch, 'temp_file.txt')
+        } for _ in range(4)]
+        err_str = 'output_file paths must be unique'
+        with self.assertRaisesRegex(ValueError, err_str):
+            impl_output = self.getImpl().render_templates({}, args_list)
+
+    def test_impl_render_templates(self):
+        """
+            full Impl test, multiple template rendering:
+            input validation, rendering, saving to file, return
+        """
+
+        args_list = []
+        expected_output = []
+        expected_content = {}
+        for test_item in TEST_DATA['render_test'].keys():
+            ref_text = TEST_DATA['render_test'][test_item]
+            test_args = {
+                'template_file': TEST_DATA['template'],
+                'output_file': os.path.join(self.scratch, 'temp_file-' + str(uuid4()) + '.txt')
+            }
+            if test_item:
+                test_args['template_data_json'] = TEST_DATA[test_item + '_json']
+
+            args_list.append(test_args)
+            expected_output.append({
+                'path': test_args['output_file'],
+            })
+            expected_content[test_args['output_file']] = ref_text['abs_path']
+
+
+        impl_output = self.getImpl().render_templates({}, args_list)
+
+        self.assertEqual(impl_output[0], expected_output)
+
+        for output_file in impl_output[0]:
+            self.check_file_contents(output_file['path'], expected_content[output_file['path']])
 
 
 if __name__ == '__main__':

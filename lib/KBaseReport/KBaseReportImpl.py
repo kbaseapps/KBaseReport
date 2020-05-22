@@ -24,9 +24,9 @@ class KBaseReport:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "3.1.0"
+    VERSION = "3.2.0"
     GIT_URL = "https://github.com/ialarmedalien/KBaseReport"
-    GIT_COMMIT_HASH = "1ad1a45387d5daa591d123b65719bcca8781db2a"
+    GIT_COMMIT_HASH = "f5bc602a97236420844d03782549055d9ecbf2f0"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -116,7 +116,6 @@ class KBaseReport:
         # ctx is the context object
         # return variables are: info
         #BEGIN create
-        # Validate params
         params = validate_simple_report_params(params)
 
         if 'template' in params['report']:
@@ -154,29 +153,29 @@ class KBaseReport:
            list<WorkspaceObject> objects_created - List of result workspace
            objects that this app *         has created. They will be linked
            in the report view *     list<string> warnings - A list of
-           plain-text warning messages *     list<File> html_links - A list
-           of paths, shock IDs, or template specs pointing to HTML files or
-           directories. *         If you pass in paths to directories, they
-           will be zipped and uploaded *     int direct_html_link_index -
-           Index in html_links to set the direct/default view in the report.
-           *         Set only one of 'direct_html', 'template', and
-           'html_links'/'direct_html_link_index'. *         Setting both
-           'template' and 'html_links'/'direct_html_link_index' will generate
-           an error. *     string direct_html - Simple HTML text content to
-           be rendered within the report widget. *         Set only one of
-           'direct_html', 'template', and
+           plain-text warning messages *     string direct_html - Simple HTML
+           text content to be rendered within the report widget. *
+           Set only one of 'direct_html', 'template', and
            'html_links'/'direct_html_link_index'. *         Setting both
            'template' and 'direct_html' will generate an error. *
            TemplateParams template - render a template to produce HTML text
            content that will be *         rendered within the report widget.
            Setting 'template' and 'direct_html' or *
            'html_links'/'direct_html_link_index' will generate an error. *
-           list<File> file_links - Allows the user to specify files that the
-           report widget *         should link for download. If you pass in
-           paths to directories, they will be zipped. *         Each entry
-           should be a path, shock ID, or template specification. *
-           string report_object_name - Name to use for the report object
-           (will *         be auto-generated if unspecified) *
+           list<File> html_links - A list of paths, shock IDs, or template
+           specs pointing to HTML files or directories. *         If you pass
+           in paths to directories, they will be zipped and uploaded *
+           int direct_html_link_index - Index in html_links to set the
+           direct/default view in the report. *         Set only one of
+           'direct_html', 'template', and
+           'html_links'/'direct_html_link_index'. *         Setting both
+           'template' and 'html_links'/'direct_html_link_index' will generate
+           an error. *     list<File> file_links - Allows the user to specify
+           files that the report widget *         should link for download.
+           If you pass in paths to directories, they will be zipped. *
+           Each entry should be a path, shock ID, or template specification.
+           *     string report_object_name - Name to use for the report
+           object (will *         be auto-generated if unspecified) *
            html_window_height - Fixed height in pixels of the HTML window for
            the report *     summary_window_height - Fixed height in pixels of
            the summary window for the report) -> structure: parameter
@@ -322,6 +321,58 @@ class KBaseReport:
                              'output_file_path is not type dict as required.')
         # return the results
         return [output_file_path]
+
+    def render_templates(self, ctx, params):
+        """
+        Render files from a set of template specifications.
+        It returns the output file paths in the order they were supplied in the form
+        [{ 'path': '/path/to/file' }, { 'path': '/path/to/file2' }, ....]
+        If any template fails to render, the endpoint will return an error.
+        :param params: instance of type "RenderTemplateListParams" ->
+           structure: parameter "params" of list of type
+           "RenderTemplateParams" (* Render a template using the supplied
+           data, saving the results to an output * file in the scratch
+           directory. * * Required arguments: *     string template_file  -
+           Path to the template file to be rendered. *     string output_file
+           -  Path to the file where the rendered template *
+           should be saved. Must be in the scratch directory. * Optional: *
+           string template_data_json -  Data for rendering in the template.)
+           -> structure: parameter "template_file" of String, parameter
+           "output_file" of String, parameter "template_data_json" of String
+        :returns: instance of type "FileList" -> structure: parameter
+           "file_list" of list of type "File" (* A file to be linked in the
+           report. Pass in *either* a shock_id or a * path. If a path to a
+           file is given, then the file will be uploaded. If a * path to a
+           directory is given, then it will be zipped and uploaded. *
+           Required arguments: *     string name - Plain-text filename (eg.
+           "results.zip") -- shown to the user *  One of the following
+           identifiers is required: *     string path - Can be a file or
+           directory path. *     string shock_id - Shock node ID. *
+           TemplateParams template - template to be rendered and saved as a
+           file. * Optional arguments: *     string label - A short
+           description for the file (eg. "Filter results") *     string
+           description - A more detailed, human-readable description of the
+           file) -> structure: parameter "path" of String, parameter
+           "shock_id" of String, parameter "template" of type
+           "TemplateParams" (* Structure representing a template to be
+           rendered. 'template_file' must be provided, * 'template_data_json'
+           is optional) -> structure: parameter "template_file" of String,
+           parameter "template_data_json" of String, parameter "name" of
+           String, parameter "label" of String, parameter "description" of
+           String
+        """
+        # ctx is the context object
+        # return variables are: output_paths
+        #BEGIN render_templates
+        output_paths = self.templater.render_template_list_to_files(params)
+        #END render_templates
+
+        # At some point might do deeper type checking...
+        if not isinstance(output_paths, list):
+            raise ValueError('Method render_templates return value ' +
+                             'output_paths is not type dict as required.')
+        # return the results
+        return [output_paths]
     def status(self, ctx):
         #BEGIN_STATUS
         returnVal = {'state': "OK",

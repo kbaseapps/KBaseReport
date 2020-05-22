@@ -350,6 +350,10 @@ class Application(object):
                              name='KBaseReport.render_template',
                              types=[dict])
         self.method_authentication['KBaseReport.render_template'] = 'required'  # noqa
+        self.rpc_service.add(impl_KBaseReport.render_templates,
+                             name='KBaseReport.render_templates',
+                             types=[dict])
+        self.method_authentication['KBaseReport.render_templates'] = 'required'  # noqa
         self.rpc_service.add(impl_KBaseReport.status,
                              name='KBaseReport.status',
                              types=[dict])
