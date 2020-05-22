@@ -213,7 +213,10 @@ class KBaseReportTest(unittest.TestCase):
                     },
                 })
                 data = self.check_created_report(result)
-                self.assertMultiLineEqual(data['direct_html'], ref_text['abs_path'])
+                self.assertMultiLineEqual(
+                    data['direct_html'].rstrip(), 
+                    ref_text['abs_path'].rstrip()
+                )
 
     def test_create_param_errors(self):
         """

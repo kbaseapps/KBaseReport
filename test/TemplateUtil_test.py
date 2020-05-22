@@ -254,7 +254,7 @@ class TestTemplateUtils(unittest.TestCase):
 
         with open(new_file, 'r') as f:
             rendered_text = f.read()
-        self.assertMultiLineEqual(rendered_text.rstrip(), ref_text)
+        self.assertMultiLineEqual(rendered_text.rstrip(), ref_text.rstrip())
 
     def test_class_init(self):
         """ TemplateUtil: class initialisation """
