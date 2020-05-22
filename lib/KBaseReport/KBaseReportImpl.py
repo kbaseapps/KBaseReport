@@ -24,7 +24,7 @@ class KBaseReport:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "3.1.0"
+    VERSION = "3.2.0"
     GIT_URL = "https://github.com/ialarmedalien/KBaseReport"
     GIT_COMMIT_HASH = "f5bc602a97236420844d03782549055d9ecbf2f0"
 
