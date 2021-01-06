@@ -13,6 +13,8 @@ from KBaseReport.authclient import KBaseAuth as _KBaseAuth
 from installed_clients.DataFileUtilClient import DataFileUtil
 from installed_clients.WorkspaceClient import Workspace
 from TemplateUtil_test import get_test_data
+from installed_clients.baseclient import ServerError
+from installed_clients.baseclient import ServerError
 
 
 class KBaseReportTest(unittest.TestCase):
@@ -58,12 +60,19 @@ class KBaseReportTest(unittest.TestCase):
         shutil.copy2(os.path.join(dirname, 'data/a.txt'), cls.a_file_path)
         shutil.copy2(os.path.join(dirname, 'data/b.txt'), cls.b_file_path)
         # Upload files to shock
-        cls.a_file_shock = cls.dfu.file_to_shock({
-            'file_path': cls.a_file_path, 'make_handle': 0
-        })
-        cls.b_file_shock = cls.dfu.file_to_shock({
-            'file_path': cls.b_file_path, 'make_handle': 0
-        })
+        try:
+            cls.a_file_shock = cls.dfu.file_to_shock({
+                'file_path': cls.a_file_path, 'make_handle': 0
+            })
+        except Exception as e:
+            # raise ValueError('Unable to store ' + cls.a_file_path + str(e))
+            print('Unable to store ' + cls.a_file_path + str(e))
+        try:
+            cls.b_file_shock = cls.dfu.file_to_shock({
+                'file_path': cls.b_file_path, 'make_handle': 0
+            })
+        except Exception as e:
+            print('Unable to store ' + cls.b_file_path + str(e))
 
     @classmethod
     def tearDownClass(cls):

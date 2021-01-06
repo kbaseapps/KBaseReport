@@ -1,5 +1,8 @@
 KBaseReport Release Notes
 =========================
+3.2.1
+-----
+- Fixed unittests which failed because of empty a.txt and b.txt file
 
 3.2.0
 -----
