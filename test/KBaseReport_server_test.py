@@ -65,7 +65,6 @@ class KBaseReportTest(unittest.TestCase):
                 'file_path': cls.a_file_path, 'make_handle': 0
             })
         except Exception as e:
-            # raise ValueError('Unable to store ' + cls.a_file_path + str(e))
             print('Unable to store ' + cls.a_file_path + str(e))
         try:
             cls.b_file_shock = cls.dfu.file_to_shock({
