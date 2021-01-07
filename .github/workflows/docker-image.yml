@@ -9,11 +9,6 @@ jobs:
     - name: checkout git repo
       uses: actions/checkout@v2
 
-    - name: Add bin to $PATH
-      run: |
-        env
-        echo "::add-path::$GITHUB_WORKSPACE/bin"
-
     - name: pull and run docker image
       shell: bash
       env:
@@ -23,4 +18,4 @@ jobs:
         mkdir -p bin
         docker run ialarmedalien/kb-sdk genscript > bin/kb-sdk
         chmod 755 bin/kb-sdk
-        kb-sdk test
+        bin/kb-sdk test
