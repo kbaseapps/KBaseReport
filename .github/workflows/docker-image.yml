@@ -18,4 +18,4 @@ jobs:
         mkdir -p bin
         docker run kbase/kb-sdk genscript > bin/kb-sdk
         chmod 755 bin/kb-sdk
-        bin/kb-sdk test
+        sh bin/kb-sdk test
