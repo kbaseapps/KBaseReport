@@ -58,12 +58,17 @@ class KBaseReportTest(unittest.TestCase):
         shutil.copy2(os.path.join(dirname, 'data/a.txt'), cls.a_file_path)
         shutil.copy2(os.path.join(dirname, 'data/b.txt'), cls.b_file_path)
         # Upload files to shock
-        cls.a_file_shock = cls.dfu.file_to_shock({
-            'file_path': cls.a_file_path, 'make_handle': 0
-        })
-        cls.b_file_shock = cls.dfu.file_to_shock({
-            'file_path': cls.b_file_path, 'make_handle': 0
-        })
+        file_shocks = []
+        file_paths = [cls.a_file_path, cls.b_file_path]
+        for i in range(2):
+            try:
+                file_shocks.append(cls.dfu.file_to_shock({
+                    'file_path': file_paths[i], 'make_handle': 0
+                }))
+            except Exception as e:
+                print('Unable to store ' + file_paths[i] + str(e))
+        cls.a_file_shock = file_shocks[0]
+        cls.b_file_shock = file_shocks[1]
 
     @classmethod
     def tearDownClass(cls):
