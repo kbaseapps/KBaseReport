@@ -1,5 +1,10 @@
 KBaseReport Release Notes
 =========================
+
+3.2.2
+-----
+- Rebuilt with no changes to update from deprecated Docker image/manifest format.
+
 3.2.1
 -----
 - Fixed unittests which failed because of empty a.txt and b.txt file
